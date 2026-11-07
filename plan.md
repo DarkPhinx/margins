@@ -11,7 +11,7 @@ Scope Decisions
 • Canon: the 66-book Protestant canon. No Apocrypha.
 • Translations: BSB and KJV (public domain, bundled, work offline) and ESV (via Crossway API, online only).
 • Red-letter text for the words of Jesus, on by default, with a setting to turn it off.
-• Textual variants (e.g. John 7:53–8:11) shown the way standard Bibles do: in the text, bracketed, with a note.
+• Textual variants (John 7:53–8:11, Mark 16:9–20) shown the way standard Bibles do: in the text, bracketed, with a note. The 16 verses the BSB keeps only in footnotes (e.g. Matt 17:21, Acts 8:37) appear as small, faded verse numbers that open the verse's wording.
 • Platforms: web app and Windows desktop app first; iOS and Android later.
 Tech Stack
 • Interface: React + TypeScript, Tailwind CSS, dnd-kit (drag and drop), TipTap (rich text editor).
@@ -19,31 +19,50 @@ Tech Stack
 • Mobile (future): Capacitor wrapping the same web app.
 • Backend: Supabase — Postgres database, authentication, file storage, edge functions. Free tier for development.
 • Offline-first: data saved locally first (IndexedDB), then synced to Supabase.
-• AI (Phase 5): Python, pgvector, open embedding model, open-weight LLM fine-tuned with LoRA (Unsloth / Hugging Face).
+• AI (Phases 14–15): Python, pgvector, open embedding model, open-weight LLM fine-tuned with LoRA (Unsloth / Hugging Face).
 Data Sources
 • BSB, KJV: public domain, bundled as static files. Web version caches them in the background on first visit.
-• ESV: Crossway API (api.esv.org), free for non-commercial use. Key stored in a .env file, never in code, and called through a Supabase edge function so it is never exposed in the browser.
+    ◦ BSB: the publisher's own USFM (bereanbible.com/bsb_usfm.zip), which carries the red-letter tags (1,420 spans).
+    ◦ KJV: eBible.org's eng-kjv2006 (1769 text with Strong's numbers, 2,038 red-letter spans). Printing it in the UK, or importing printed copies, needs permission.
+    ◦ Both archives are pinned with checksums in data/sources/. The build fails if a checksum, verse count, red-letter span count or word-for-word text check doesn't match.
+• ESV: Crossway API (api.esv.org), free for non-commercial use. The key is a server secret for the Supabase edge function, never in code and never a VITE_ variable (Vite ships those to the browser; the build refuses one).
 • Original languages: STEPBible tagged Greek NT and Hebrew OT (CC BY, credit required), extended Strong's numbers, lexicons.
 • Cross-references: OpenBible.info dataset (ranked by votes) and the Treasury of Scripture Knowledge.
-• Commentaries (Phase 4): public-domain works, checked individually for copyright.
+• Commentaries (Phase 13): public-domain works, checked individually for copyright.
 ESV Caching Rules
 • Never store more than 500 ESV verses locally, and never more than half of any single book.
 • Use an LRU (least recently used) cache counted in verses, built with a JavaScript Map.
 • When over the limit, evict the least recently viewed passages until back under.
-• Respect API limits: 5,000 queries/day, 1,000/hour, 60/minute, max 500 verses per query.
+• Respect API limits: 5,000 queries/day, 1,000/hour, 60/minute, max 500 verses per query. The limits apply to the whole key across all users, so the edge function enforces them; the browser also stops on a 429 and honours Retry-After.
+• Half a book rounds down and uses the smaller verse count (the BSB's). Cached entries expire after 30 days. A passage too big to store is refused.
 • If the limit is hit or the user is offline, fall back to BSB with a small notice.
+• The service worker never caches ESV requests.
 • Confirm caching rules with Crossway before public launch.
 Phase 1 — The Reader
 Goal: a clean, reliable Bible reader.
 Temporary note (ESV key pending): Crossway is reviewing the API application (reply expected in a few weeks). Until the key arrives, build every translation through one shared translation layer, and ship BSB and KJV fully working. The ESV provider, cache, and limit rules are built and tested against mock sample data only, kept behind a disabled feature flag and hidden from users. Turn it on once the key is approved; if Crossway declines, the app runs on BSB and KJV with no rework.
-• BSB and KJV bundled as static files, working fully offline (included in the Windows installer; cached in the background on the web).
-• ESV through the Crossway API via a Supabase edge function, with the key kept in .env.
-    ◦ ESV guidelines: show the required copyright notice (exact wording from api.esv.org/#copyright) wherever ESV text appears; never display more than 500 consecutive verses or half a book on one page; strictly noncommercial use.
-• ESV LRU cache (500-verse and half-book limits) and automatic BSB fallback with a small notice. Display limit: never show more than 500 consecutive ESV verses, or half a book, on one page, so no whole-book view for the ESV. Required Crossway copyright notice and esv.org link shown on any page displaying ESV text. Use stays strictly noncommercial: no ads, donations, or paid plans.
+Stack: Vite, React, strict TypeScript, Tailwind, React Router, vite-plugin-pwa, Vitest + Testing Library, Playwright for offline tests.
+• BSB and KJV bundled as static files (one JSON file per book, built by scripts/build-bibles.ts from the pinned sources), working fully offline (included in the Windows installer; cached in the background on the web).
+• One translation layer: every translation is a provider with pageFor() and read(). Verses share one address (BBCCCVVV, John 3:16 = 43003016) across translations; the address list is the union of all translations, and each translation lists the addresses it lacks.
+• Omitted verses: the BSB omits 16 verses (e.g. Matt 17:21, Acts 8:37) and keeps them in footnotes. They are not put in the text. Where each belongs, a small, faded, tappable verse number opens a popup with the verse's wording in italics (from the BSB footnote) and a short note that it isn't found in the earliest manuscripts. The verse keeps its shared address so notes can attach to it. The build fails if any BSB footnote lacks the wording.
+• KJV setting "Show manuscript notes" (on by default): when on, the KJV shows the same 16 verses with the same marker, with the KJV wording in the popup. When off, the KJV shows them in the text exactly as printed. The KJV text itself is never changed.
+• Textual variants: John 7:53–8:11 and Mark 16:9–20 are bracketed with a footnote in both translations, using the BSB's own footnote wording (in the KJV it is marked as a Margins note, not part of the KJV text). The brackets come from a small curated list in the app; the BSB's [ ] marks elsewhere are quotation marks, not variants.
+• Switching translation at a verse another translation prints differently goes to its marker, or to the nearest verse, with a small notice.
 • Red letters for the words of Jesus, on by default, with a setting to turn them off.
-• Textual variants bracketed with a note, as standard Bibles do.
-• Book, chapter, and verse navigation; switching translations. Section headings shown as each translation provides them (BSB and ESV have their own; the KJV has none), since headings differ by translation and editor.
-Done when: all three translations display correctly; the cache never breaks Crossway's limits; tests cover the cache and fallback.
+• Continuous reading (setting, off by default): scroll straight from one chapter into the next and across books, up or down. The verse at the top of the screen is tracked as you scroll, and the header, address and saved position follow it. BSB and KJV only; the ESV stays paged because it may never show more than half a book at once.
+• Book, chapter, and verse navigation; switching translations; last position remembered. Section headings shown as each translation provides them (the BSB and ESV have their own; the KJV has only Psalm 119's letters and the epistles' closing notes), since headings differ by translation and editor.
+• ESV behind a disabled feature flag (MARGINS_ESV): provider, cache, limiter, paging, fallback and notices, built and tested against invented placeholder text only, never real ESV text, kept out of the production bundle. With the flag off, no ESV code is in the build. The build refuses to turn the flag on while the Crossway copyright notice is missing.
+    ◦ ESV guidelines: show the required copyright notice (exact wording from api.esv.org/#copyright) and esv.org link wherever ESV text appears; never display more than 500 consecutive verses or half a book on one page, so no whole-book view. Six chapters are over half their book (Obadiah, Philemon, 2 John, 3 John, Jude, Haggai 2) and are split across pages. Strictly noncommercial: no ads, donations, or paid plans.
+    ◦ The ESV cache lives in memory for now.
+• Left for later: the Supabase edge function (Phase 1 defines only its interface, in shared/esv-contract.ts, and the shared limiter it will reuse), Supabase itself, Electron, notes, search.
+Done when (checklist in docs/phase-1-done.md):
+• BSB and KJV display correctly and work fully offline after the first visit.
+• Validation passes for all 66 books, 1,189 chapters, verse counts and red-letter spans.
+• Hand-checked: John 3, John 7–8, Mark 16, Psalms 3 and 119, Jude, Revelation 12.
+• Navigation, translation switching at missing verses, and the red-letter setting work.
+• Tests cover the cache and limits (including 2 John's limit of 6 verses), rate limits, fallback and paging, against mock data.
+• With the flag off, no ESV appears anywhere for users.
+• A test blocks turning the flag on while the ESV copyright notice is missing.
 Phase 2 — Notes on Verses
 Goal: one home for every note, saved locally on one device.
 • Notes, questions, highlights, and journal entries attached to a verse or range.

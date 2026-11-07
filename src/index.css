@@ -1,0 +1,564 @@
+@import 'tailwindcss';
+
+:root {
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf8;
+  --ink: #2b2925;
+  --ink-soft: #5c574e;
+  --faint: #8d877c;
+  --rule: #e2dcd0;
+  --accent: #7a5b2e;
+  --jesus: #a8321f;
+  --notice: #efe7d6;
+  --target: #f1e3b8;
+  --scripture: 'Literata Variable', 'Iowan Old Style', Georgia, serif;
+  --ui: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1b1a18;
+    --paper-raised: #252320;
+    --ink: #e7e2d8;
+    --ink-soft: #b5aea2;
+    --faint: #857f74;
+    --rule: #38352f;
+    --accent: #d2ab6c;
+    --jesus: #ef8a74;
+    --notice: #2d2a24;
+    --target: #3d3626;
+    color-scheme: dark;
+  }
+}
+
+html {
+  background: var(--paper);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--ui);
+}
+
+a {
+  color: var(--accent);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Bar */
+.reader-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule);
+}
+.reader-bar-inner {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.place-btn {
+  background: none;
+  border: 0;
+  padding: 0.4rem 0.25rem;
+  font-weight: 600;
+  font-size: 1rem;
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+.caret {
+  color: var(--faint);
+  font-size: 0.75rem;
+}
+.bar-right {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+.translation-select {
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--ink);
+}
+.icon-btn {
+  background: none;
+  border: 0;
+  padding: 0.45rem;
+  border-radius: 999px;
+  color: var(--ink-soft);
+  display: inline-flex;
+}
+.icon-btn:hover {
+  background: var(--rule);
+}
+
+/* Page */
+.reader-main {
+  max-width: 38rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+.chapter-title {
+  font-family: var(--scripture);
+  font-weight: 400;
+  margin: 1rem 0 1.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.chapter-book {
+  font-size: 1rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.chapter-num {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+.loading {
+  color: var(--faint);
+}
+.notice {
+  background: var(--notice);
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+/* Scripture */
+.chapter {
+  font-family: var(--scripture);
+  font-size: 1.125rem;
+  line-height: 1.75;
+  overflow-wrap: break-word;
+}
+.para {
+  margin: 0 0 0.9rem;
+  text-indent: 1.25rem;
+}
+.heading + .para,
+.parallel-refs + .para {
+  text-indent: 0;
+}
+.para-embedded {
+  margin-left: 1.25rem;
+  text-indent: 0;
+}
+.para-center {
+  text-align: center;
+  text-indent: 0;
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+}
+.poetry {
+  margin: 0;
+  padding-left: 2.5rem;
+  text-indent: -1.5rem;
+}
+.q2 {
+  padding-left: 3.75rem;
+}
+.qr {
+  text-align: right;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+.list {
+  margin: 0 0 0.2rem;
+  padding-left: 2.5rem;
+  text-indent: -1.25rem;
+}
+.li2 {
+  padding-left: 3.75rem;
+}
+.stanza-break {
+  height: 0.9rem;
+}
+.heading {
+  font-family: var(--ui);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 2rem 0 0.35rem;
+  line-height: 1.4;
+}
+.heading-2 {
+  font-weight: 500;
+  font-style: italic;
+}
+.acrostic {
+  font-family: var(--scripture);
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  margin: 1.75rem 0 0.4rem;
+}
+.parallel-refs {
+  font-family: var(--ui);
+  font-size: 0.8rem;
+  color: var(--faint);
+  margin: 0 0 0.6rem;
+}
+.division {
+  text-align: center;
+  font-family: var(--ui);
+  letter-spacing: 0.14em;
+  font-size: 0.85rem;
+  margin: 1rem 0 1.25rem;
+  color: var(--ink-soft);
+}
+.division-sub {
+  letter-spacing: 0.02em;
+  font-size: 0.8rem;
+  color: var(--faint);
+}
+.descriptive {
+  font-style: italic;
+  color: var(--ink-soft);
+  margin: 0 0 0.6rem;
+}
+.colophon {
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  margin-top: 1.5rem;
+}
+
+.verse-num {
+  font-family: var(--ui);
+  font-size: 0.62em;
+  font-weight: 600;
+  color: var(--faint);
+  margin: 0 0.2em 0 0.1em;
+  scroll-margin-top: 5rem;
+  font-style: normal;
+}
+.verse-target {
+  background: var(--target);
+  border-radius: 3px;
+  box-shadow: 0 0 0 3px var(--target);
+  transition: background 1.2s ease;
+}
+.red-letters .wj {
+  color: var(--jesus);
+}
+.add {
+  font-style: italic;
+}
+.nd {
+  font-variant: small-caps;
+}
+.variant-bracket {
+  color: var(--faint);
+  font-weight: 300;
+  margin: 0 0.05em;
+}
+
+/* Footnote markers and the faded omitted-verse markers */
+.note-ref {
+  background: none;
+  border: 0;
+  padding: 0 0.15em;
+  vertical-align: super;
+  font-family: var(--ui);
+  font-size: 0.6em;
+  line-height: 1;
+  font-style: italic;
+  color: var(--accent);
+  text-indent: 0;
+}
+.omitted-verse {
+  background: none;
+  border: 0;
+  border-bottom: 1px dotted currentColor;
+  padding: 0 0.1em;
+  margin: 0 0.25em;
+  vertical-align: super;
+  font-family: var(--ui);
+  font-size: 0.62em;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--faint);
+  opacity: 0.6;
+  scroll-margin-top: 5rem;
+  text-indent: 0;
+}
+.omitted-verse:hover,
+.omitted-verse[aria-expanded='true'] {
+  opacity: 1;
+}
+.popup {
+  position: fixed;
+  z-index: 30;
+  display: block;
+  background: var(--paper-raised);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.14);
+  font-family: var(--ui);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-indent: 0;
+  text-align: left;
+  font-style: normal;
+  font-variant: normal;
+  letter-spacing: normal;
+}
+.popup-meta {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--faint);
+  margin-bottom: 0.25rem;
+}
+.popup-body {
+  display: block;
+  font-family: var(--scripture);
+  font-size: 0.95rem;
+}
+.popup-explain {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+.note-verse {
+  font-size: 0.7em;
+  margin-right: 0.15em;
+  color: var(--faint);
+}
+
+/* Continuous reading */
+.continuous-chapter + .continuous-chapter {
+  margin-top: 2.5rem;
+}
+.continuous-chapter + .continuous-chapter.book-start {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--rule);
+}
+.continuous-chapter .chapter-title {
+  scroll-margin-top: 4rem;
+}
+.continuous-more,
+.continuous-end {
+  text-align: center;
+  font-size: 0.85rem;
+  margin: 2rem 0;
+}
+.continuous-end {
+  color: var(--faint);
+  letter-spacing: 0.08em;
+}
+
+/* Navigation */
+.chapter-nav,
+.page-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin: 2.5rem 0 1rem;
+  font-size: 0.9rem;
+}
+.page-nav {
+  margin: 0.5rem 0 1.25rem;
+  color: var(--faint);
+}
+.chapter-nav button,
+.page-nav button {
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  color: var(--ink-soft);
+}
+.chapter-nav button:hover,
+.page-nav button:hover:not(:disabled) {
+  border-color: var(--faint);
+  color: var(--ink);
+}
+.page-nav button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.translation-notice {
+  border-top: 1px solid var(--rule);
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--faint);
+}
+
+/* Sheets (picker, settings) */
+.sheet {
+  border: 0;
+  padding: 0;
+  margin: auto auto 0;
+  width: 100%;
+  max-width: 42rem;
+  max-height: 85vh;
+  border-radius: 16px 16px 0 0;
+  background: var(--paper-raised);
+  color: var(--ink);
+  box-shadow: 0 -10px 40px rgb(0 0 0 / 0.18);
+}
+@media (min-width: 640px) {
+  .sheet {
+    margin: auto;
+    border-radius: 16px;
+  }
+}
+.sheet::backdrop {
+  background: rgb(0 0 0 / 0.3);
+}
+.sheet-inner {
+  padding: 0.75rem 1rem 1.5rem;
+}
+.sheet-head {
+  display: grid;
+  grid-template-columns: 5rem 1fr 5rem;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: var(--paper-raised);
+  padding: 0.25rem 0 0.75rem;
+}
+.sheet-head h2 {
+  margin: 0;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.sheet-head > :last-child {
+  justify-self: end;
+}
+.link-btn {
+  background: none;
+  border: 0;
+  color: var(--accent);
+  padding: 0.35rem 0;
+  justify-self: start;
+}
+.sheet-section {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin: 1rem 0 0.5rem;
+  font-weight: 600;
+}
+.book-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: 0.25rem;
+}
+.book-btn {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.9rem;
+}
+.book-btn:hover,
+.num-btn:hover {
+  background: var(--rule);
+}
+.book-btn.current {
+  font-weight: 600;
+  color: var(--accent);
+}
+.num-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(2.9rem, 1fr));
+  gap: 0.3rem;
+}
+.num-btn {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid var(--rule);
+  background: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+.whole-chapter {
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.875rem;
+  color: var(--accent);
+}
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.toggle-label {
+  display: block;
+  font-weight: 500;
+}
+.toggle-hint {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin-top: 0.15rem;
+  line-height: 1.45;
+}
+.toggle-row input {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.2rem;
+  accent-color: var(--accent);
+  flex: none;
+}
+.offline-line {
+  font-size: 0.8rem;
+  color: var(--faint);
+}
+.about p {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
