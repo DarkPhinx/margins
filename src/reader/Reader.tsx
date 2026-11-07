@@ -5,7 +5,9 @@ import { getProvider, isAvailable } from '../translations/registry';
 import { getSettings, useSettings } from '../settings';
 import { ContinuousReader } from './ContinuousReader';
 import { PagedReader, type ReaderProps } from './PagedReader';
-import { SettingsHost } from './ReaderBar';
+import { SelectionBar } from '../study/SelectionBar';
+import { useStudy } from '../study/StudyContext';
+import { StudyPanel } from '../study/StudyPanel';
 import { readerPath } from './nav';
 
 export function Reader() {
@@ -34,11 +36,16 @@ function ReaderPage(props: ReaderProps) {
   const { last } = getSettings();
   const resumeVerse = last.book === props.book && last.chapter === props.chapter && last.verse > 1 ? last.verse : null;
 
+  const { panelOpen, selection } = useStudy();
+  const classes = ['reader', settings.redLetters && 'red-letters', panelOpen && 'study-open', selection && 'has-selection']
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <div className={settings.redLetters ? 'reader red-letters' : 'reader'}>
-      <SettingsHost>
+    <div className={classes}>
         {continuous ? <ContinuousReader {...props} resumeVerse={resumeVerse} /> : <PagedReader {...props} />}
-      </SettingsHost>
+        <StudyPanel />
+        <SelectionBar />
     </div>
   );
 }

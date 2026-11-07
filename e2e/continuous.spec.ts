@@ -64,7 +64,8 @@ test('loads the chapter above without moving the text you are reading', async ({
   expect(top).toBeLessThan(200);
   await expect(place(page)).toContainText('John 3');
 
-  // Reopening goes back to the same place.
+  // Reopening offers the same place, and continuing goes back to it.
   await page.goto('/');
+  await page.getByRole('button', { name: /Continue reading\s*John 3:16/ }).click();
   await expect(page).toHaveURL(/\/bsb\/JHN\/3\?v=16$/);
 });

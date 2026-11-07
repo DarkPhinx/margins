@@ -6,12 +6,14 @@ interface PickerProps {
   book: BookId;
   onPick: (book: BookId, chapter: number, verse?: number) => void;
   onClose: () => void;
+  /** Pick a whole chapter (for tying a journal entry): no verse step. */
+  chapterOnly?: boolean;
 }
 
 type Step = { kind: 'book' } | { kind: 'chapter'; book: BookId } | { kind: 'verse'; book: BookId; chapter: number };
 
 /** Book, then chapter, then (optionally) verse. */
-export function Picker({ book, onPick, onClose }: PickerProps) {
+export function Picker({ book, onPick, onClose, chapterOnly = false }: PickerProps) {
   const [step, setStep] = useState<Step>({ kind: 'book' });
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -22,7 +24,9 @@ export function Picker({ book, onPick, onClose }: PickerProps) {
 
   const title =
     step.kind === 'book'
-      ? 'Choose a book'
+      ? chapterOnly
+        ? 'Choose a chapter'
+        : 'Choose a book'
       : step.kind === 'chapter'
         ? bookInfo(step.book).name
         : `${bookInfo(step.book).name} ${step.chapter}`;
@@ -73,7 +77,13 @@ export function Picker({ book, onPick, onClose }: PickerProps) {
                       <button
                         type="button"
                         className={b.id === book ? 'book-btn current' : 'book-btn'}
-                        onClick={() => (b.chapters === 1 ? setStep({ kind: 'verse', book: b.id, chapter: 1 }) : setStep({ kind: 'chapter', book: b.id }))}
+                        onClick={() =>
+                          b.chapters === 1
+                            ? chapterOnly
+                              ? onPick(b.id, 1)
+                              : setStep({ kind: 'verse', book: b.id, chapter: 1 })
+                            : setStep({ kind: 'chapter', book: b.id })
+                        }
                       >
                         {b.name}
                       </button>
@@ -92,7 +102,7 @@ export function Picker({ book, onPick, onClose }: PickerProps) {
                 <button
                   type="button"
                   className="num-btn"
-                  onClick={() => setStep({ kind: 'verse', book: step.book, chapter: c })}
+                  onClick={() => (chapterOnly ? onPick(step.book, c) : setStep({ kind: 'verse', book: step.book, chapter: c }))}
                   onDoubleClick={() => onPick(step.book, c)}
                 >
                   {c}

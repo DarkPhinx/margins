@@ -1,0 +1,176 @@
+/* App frame: the sidebar on the left and the page beside it. */
+
+:root {
+  --sidebar-width: 0px;
+}
+@media (min-width: 900px) {
+  :root {
+    --sidebar-width: 220px;
+  }
+}
+
+.shell-main {
+  margin-left: var(--sidebar-width);
+  min-width: 0;
+}
+
+.sidebar {
+  position: fixed;
+  z-index: 25;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 220px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0.75rem;
+  background: var(--paper-raised);
+  border-right: 1px solid var(--rule);
+  font-family: var(--ui);
+  overflow-y: auto;
+}
+.sidebar-brand {
+  font-family: var(--scripture);
+  font-size: 1.35rem;
+  padding: 0.25rem 0.6rem 1rem;
+  color: var(--ink);
+}
+.sidebar-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.15rem;
+}
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.55rem 0.6rem;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 0.95rem;
+  text-align: left;
+}
+.sidebar-link:hover {
+  background: var(--notice);
+  color: var(--ink);
+}
+.sidebar-link.active {
+  background: var(--notice);
+  color: var(--accent);
+  font-weight: 600;
+}
+.sidebar-foot {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--rule);
+}
+
+/* Narrow screens: the sidebar is a drawer opened by the ☰ button. */
+.menu-btn {
+  display: none;
+}
+@media (max-width: 899px) {
+  .menu-btn {
+    display: inline-flex;
+  }
+  .sidebar {
+    width: min(270px, 82vw);
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    box-shadow: none;
+  }
+  .drawer-open .sidebar {
+    transform: none;
+    box-shadow: 8px 0 30px rgb(0 0 0 / 0.18);
+  }
+  .drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 24;
+    background: rgb(0 0 0 / 0.3);
+  }
+}
+@media (min-width: 900px) {
+  .page-header-bare {
+    display: none;
+  }
+}
+
+/* Plain pages (Home, Journal, Notes) */
+.page {
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--ui);
+}
+.page-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 0.75rem 1rem 0.5rem;
+  background: var(--paper);
+}
+.page-header h1 {
+  margin: 0;
+  font-family: var(--scripture);
+  font-weight: 500;
+  font-size: 1.5rem;
+}
+.page-header-actions {
+  margin-left: auto;
+}
+.page-main {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 0.5rem 1rem 4rem;
+}
+.list-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.list-actions .primary-btn {
+  margin: 0;
+}
+.see-all {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+.see-all:hover {
+  text-decoration: underline;
+}
+.home-section {
+  margin-bottom: 2.25rem;
+}
+.home-section-head h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+.home-section-head h2 a:hover {
+  color: var(--accent);
+}
+.notes-list .item-card {
+  margin-bottom: 0.75rem;
+}
+.note-standalone {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: var(--faint);
+}

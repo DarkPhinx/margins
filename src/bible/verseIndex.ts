@@ -61,6 +61,38 @@ export function nearestVerse(translation: TranslationId, id: VerseId): VerseId {
   return makeVerseId(book, chapter, 1);
 }
 
+/** The address before this one in the same book, or null at the book's start. */
+export function previousVerseId(id: VerseId): VerseId | null {
+  const { book, chapter, verse } = parseVerseId(id);
+  if (verse > 1) return makeVerseId(book, chapter, verse - 1);
+  if (chapter > 1) return makeVerseId(book, chapter - 1, versesInChapter(book, chapter - 1));
+  return null;
+}
+
+/** The address after this one in the same book, or null at the book's end. */
+export function nextVerseId(id: VerseId): VerseId | null {
+  const { book, chapter, verse } = parseVerseId(id);
+  if (verse < versesInChapter(book, chapter)) return makeVerseId(book, chapter, verse + 1);
+  if (chapter < chapterCount(book)) return makeVerseId(book, chapter + 1, 1);
+  return null;
+}
+
+/** BBCCC numbers for every chapter a range touches (John 3 = 43003). */
+export function chapterKeysOf(range: { start: VerseId; end: VerseId }): number[] {
+  const first = Math.floor(range.start / 1000);
+  const last = Math.floor(range.end / 1000);
+  const keys: number[] = [];
+  for (let k = first; k <= last; k++) {
+    const chapter = k % 1000;
+    if (chapter >= 1 && chapter <= chapterCount(parseVerseId(k * 1000 + 1).book)) keys.push(k);
+  }
+  return keys;
+}
+
+export function chapterKey(book: BookId, chapter: number): number {
+  return Math.floor(makeVerseId(book, chapter, 0) / 1000);
+}
+
 export function firstBook(): BookId {
   return BOOKS[0].id;
 }

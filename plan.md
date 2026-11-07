@@ -74,6 +74,13 @@ Goal: one home for every note, saved locally on one device.
     ◦ Click to open the reference: the referenced verses in normal black text, surrounding verses in a gray tint for context.
     ◦ Click the gray context to open and read the full passage.
 • Standalone journal: dated entries not tied to any verse, in the same place as notes. Verse references typed in them are still detected and linked.
+• App layout: a sidebar on the left of every screen (a slide-out drawer on phones) with Home, Bible, Journal and Notes, and Settings at the bottom. Opening the Bible keeps the sidebar beside the text. The sidebar is an ordered list of items in one file, so later phases add entries (studies, templates, the library…) without changing the others.
+• Notes page: every note and question, on verses or standalone, filterable and searchable. Standalone notes and questions (not tied to any verse) are allowed, like standalone journal entries; this relaxes the foundation rule below for these two kinds.
+• Journal page: every entry, standalone or on a chapter, with the ways to start one.
+• Home page: the app opens on it. For now it holds Continue reading and the Journal (standalone entries, or entries tied to a chapter, written on their own page). It is built as an ordered list of self-contained sections, so later phases can add sections (e.g. open questions, recent notes, studies, templates, the library) without changing existing ones.
+• Highlights cover whole verses (decided Nov 2026), so they show in every translation through the shared verse addresses. Five colours; re-colouring part of a highlighted range splits it.
+• Built: hover a verse to see it tinted; click its text to select it (click more verses to add them); a bar offers highlight colours, Note and Question. A note or question opens as a pop-up over the passage, showing the verses, saving as you type; click outside (or Done, or Esc) to return to reading. A Study button opens a panel beside the text (a sheet under it on phones) with Chapter, Questions, Journal and Search. Notes are written in a TipTap editor that saves as you type; references are underlined while typing and become links. Hovering a link for 1.5 seconds previews it.
+• Storage: IndexedDB on the device. Items have permanent ids, change times and soft deletes, ready for Phase 5 sync. Typing is also kept as a local draft until saved, so closing the page mid-save loses nothing.
 Foundation rule: design the data model so every item (note, question, link, block) is attached to verses, ready for later phases.
 Done when: notes save, edit, and reload reliably; tests cover verse attachment.
 Phase 3 — Cross-References and Linking

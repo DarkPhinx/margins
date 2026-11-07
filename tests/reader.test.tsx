@@ -70,7 +70,7 @@ describe('reader', () => {
     expect(brackets).toEqual(['[']);
     // Notes live only beside the text; there is no list at the end of the chapter.
     expect(screen.queryByRole('region', { name: 'Footnotes' })).not.toBeInTheDocument();
-    expect(screen.queryByText('Notes')).not.toBeInTheDocument();
+    expect(container.querySelector('.chapter-notes')).toBeNull();
     const marker = container.querySelector('.variant-bracket + .note-ref') as HTMLElement;
     expect(marker).toHaveTextContent('a');
     await user.click(marker);
@@ -131,9 +131,12 @@ describe('reader', () => {
     expect(screen.getByRole('dialog', { name: /Matthew 17:21/ })).toHaveTextContent('But this kind does not come out');
   });
 
-  it('starts at the remembered position', async () => {
+  it('offers the remembered position on the home page', async () => {
+    const user = userEvent.setup();
     updateSettings({ translation: 'kjv', last: { book: 'PSA', chapter: 119, verse: 105 } });
     renderAt('/');
+    const card = await screen.findByRole('button', { name: /Continue reading\s*Psalm 119:105\s*KJV/ });
+    await user.click(card);
     expect(await screen.findByText(/a lamp unto my feet, and a light unto my path/)).toBeInTheDocument();
     expect(screen.getByLabelText('Translation')).toHaveValue('kjv');
   });

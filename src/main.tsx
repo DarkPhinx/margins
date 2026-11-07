@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 import '@fontsource-variable/literata';
 import './index.css';
+import './study/study.css';
+import './home/home.css';
+import './shell/shell.css';
 import { App } from './App';
 import { setOfflineState } from './offline';
 

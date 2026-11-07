@@ -1,0 +1,110 @@
+/* Home page and the journal writing page. */
+
+.bar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+
+.continue-card {
+  display: grid;
+  gap: 0.15rem;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  background: var(--paper-raised);
+  padding: 1rem 1.15rem;
+  margin: 0.5rem 0 2rem;
+}
+.continue-card:hover {
+  border-color: var(--accent);
+}
+.continue-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 600;
+}
+.continue-place {
+  font-family: var(--scripture);
+  font-size: 1.5rem;
+}
+.continue-meta {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.home-section-head h2 {
+  font-family: var(--scripture);
+  font-weight: 500;
+  font-size: 1.3rem;
+  margin: 0 0 0.75rem;
+}
+.secondary-btn {
+  border: 1px solid var(--rule);
+  background: none;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  font-weight: 500;
+}
+.secondary-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.study-body .secondary-btn {
+  margin: 0 0 0.75rem 0.4rem;
+}
+.home .journal-row {
+  padding: 0.75rem 0.25rem;
+}
+.journal-row-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.journal-chip {
+  font-size: 0.72rem;
+  border-radius: 999px;
+  padding: 0.05rem 0.55rem;
+  background: var(--notice);
+  color: var(--accent);
+  font-weight: 600;
+}
+.journal-chip.standalone {
+  background: none;
+  border: 1px solid var(--rule);
+  color: var(--faint);
+  font-weight: 500;
+}
+
+/* Journal writing page */
+.item-view-page .item-view-title {
+  font-family: var(--scripture);
+  font-weight: 500;
+  font-size: 1.3rem;
+  margin: 1rem 0 0.75rem;
+}
+.item-view-page .rich-editor {
+  min-height: 45vh;
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+.chapter-tie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  margin: 0.75rem 0 0.25rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+.chapter-tie .link-btn {
+  padding: 0;
+  font-size: 0.85rem;
+}

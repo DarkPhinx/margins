@@ -2,20 +2,30 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { loadRemoteProviders } from './translations/registry';
 import { Reader } from './reader/Reader';
-import { getSettings } from './settings';
-
-function Home() {
-  const { translation, last } = getSettings();
-  return <Navigate replace to={`/${translation}/${last.book}/${last.chapter}?v=${last.verse}`} />;
-}
+import { Home } from './home/Home';
+import { JournalPage } from './home/JournalPage';
+import { StudyProvider } from './study/StudyContext';
+import { AppShell } from './shell/AppShell';
+import { JournalListPage } from './pages/JournalListPage';
+import { NotesPage } from './pages/NotesPage';
 
 export function AppRoutes() {
+  // Study state sits above the routes, so the panel and a selection survive
+  // changing chapter or translation.
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/:translation/:book/:chapter" element={<Reader />} />
-      <Route path="*" element={<Home />} />
-    </Routes>
+    <StudyProvider>
+      <Routes>
+        {/* Every page sits beside the sidebar. */}
+        <Route element={<AppShell />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/journal" element={<JournalListPage />} />
+          <Route path="/journal/:id" element={<JournalPage />} />
+          <Route path="/notes" element={<NotesPage />} />
+          <Route path="/:translation/:book/:chapter" element={<Reader />} />
+          <Route path="*" element={<Navigate replace to="/" />} />
+        </Route>
+      </Routes>
+    </StudyProvider>
   );
 }
 

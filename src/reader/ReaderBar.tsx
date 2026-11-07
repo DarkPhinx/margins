@@ -4,6 +4,8 @@ import type { BookId } from '../bible/books';
 import type { TranslationId } from '../bible/types';
 import { getProvider, listProviders } from '../translations/registry';
 import { Picker } from './Picker';
+import { useStudy } from '../study/StudyContext';
+import { MenuButton } from '../shell/menu';
 import { SettingsPanel } from './SettingsPanel';
 import { chapterTitle, nextChapter, previousChapter, readerPath } from './nav';
 
@@ -39,20 +41,27 @@ export function SettingsHost({ children }: { children: ReactNode }) {
 export function ReaderBar({ translation, book, chapter, currentVerse }: ReaderBarProps) {
   const navigate = useNavigate();
   const [picker, setPicker] = useState(false);
-  const { open: settingsOpen, setOpen: setSettingsOpen } = useContext(SettingsContext);
+  // Arrow keys pause while settings are open (Settings is in the sidebar).
+  const { open: settingsOpen } = useContext(SettingsContext);
   const title = chapterTitle(book, chapter);
   const abbreviation = getProvider(translation).meta.abbreviation;
+  const { panelOpen, setPanelOpen, setPlace } = useStudy();
 
   useEffect(() => {
     document.title = `${title} (${abbreviation}) · Margins`;
   }, [title, abbreviation]);
+
+  // The study panel follows the chapter you're reading.
+  useEffect(() => {
+    setPlace({ translation, book, chapter });
+  }, [translation, book, chapter, setPlace]);
 
   useEffect(() => {
     const prev = previousChapter({ book, chapter });
     const next = nextChapter({ book, chapter });
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || picker || settingsOpen) return;
-      if ((e.target as HTMLElement).closest('input, select, textarea, dialog')) return;
+      if ((e.target as HTMLElement).closest('input, select, textarea, dialog, [contenteditable="true"], .study-panel')) return;
       if (e.key === 'ArrowLeft' && prev) navigate(readerPath(translation, prev.book, prev.chapter));
       if (e.key === 'ArrowRight' && next) navigate(readerPath(translation, next.book, next.chapter));
     };
@@ -64,12 +73,15 @@ export function ReaderBar({ translation, book, chapter, currentVerse }: ReaderBa
     <>
       <header className="reader-bar">
         <div className="reader-bar-inner">
+          <div className="bar-left">
+          <MenuButton />
           <button type="button" className="place-btn" onClick={() => setPicker(true)} aria-label={`${title}. Choose a passage`}>
             {title}
             <span aria-hidden="true" className="caret">
               ▾
             </span>
           </button>
+          </div>
           <div className="bar-right">
             <label className="sr-only" htmlFor="translation">
               Translation
@@ -86,14 +98,21 @@ export function ReaderBar({ translation, book, chapter, currentVerse }: ReaderBa
                 </option>
               ))}
             </select>
-            <button type="button" className="icon-btn" onClick={() => setSettingsOpen(true)} aria-label="Settings">
+            <button
+              type="button"
+              className={panelOpen ? 'icon-btn study-toggle active' : 'icon-btn study-toggle'}
+              onClick={() => setPanelOpen(!panelOpen)}
+              aria-label="Study"
+              aria-pressed={panelOpen}
+              title="Notes, questions, journal and search"
+            >
               <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
                 <path
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="1.6"
-                  strokeLinecap="round"
-                  d="M4 7h10M18 7h2M4 17h4M12 17h8M16 5v4M10 15v4"
+                  strokeLinejoin="round"
+                  d="M6 3.5h9l3 3V20.5H6zM9 9h6M9 12.5h6M9 16h4"
                 />
               </svg>
             </button>
