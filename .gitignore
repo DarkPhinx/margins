@@ -155,3 +155,8 @@ vite.config.ts.timestamp-*
 # Playwright
 /test-results/
 /playwright-report/
+/public/xrefs/
+
+# Large pinned sources, downloaded by npm run data (see data/sources/SOURCES.json)
+/data/cache/
+/public/words/

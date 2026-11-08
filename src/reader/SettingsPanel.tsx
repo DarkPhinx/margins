@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useOfflineState } from '../offline';
 import { listProviders } from '../translations/registry';
+import { XREF_CREDIT } from '../xrefs/xrefs';
+import { WORDS_CREDIT } from '../words/data';
 import { updateSettings, useSettings } from '../settings';
 
 function Toggle({ label, hint, checked, onChange }: { label: string; hint: string; checked: boolean; onChange: (v: boolean) => void }) {
@@ -83,6 +85,19 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
               )}
             </p>
           ))}
+          <p>
+            <strong>Cross-references.</strong> {XREF_CREDIT}{' '}
+            <a href="https://www.openbible.info/labs/cross-references/" target="_blank" rel="noreferrer">
+              openbible.info
+            </a>
+          </p>
+          <p>
+            <strong>Original language.</strong> {WORDS_CREDIT} English word links from the BSB’s public-domain
+            tables and the KJV’s Strong’s tags.{' '}
+            <a href="https://github.com/STEPBible/STEPBible-Data" target="_blank" rel="noreferrer">
+              STEPBible-Data
+            </a>
+          </p>
         </section>
       </div>
     </dialog>

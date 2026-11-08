@@ -6,6 +6,8 @@ import './index.css';
 import './study/study.css';
 import './home/home.css';
 import './shell/shell.css';
+import './xrefs/xrefs.css';
+import './words/words.css';
 import { App } from './App';
 import { setOfflineState } from './offline';
 

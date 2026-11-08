@@ -25,6 +25,8 @@ describe('reader', () => {
     const user = userEvent.setup();
     const { container } = renderAt('/bsb/JHN/3');
     expect(await screen.findByText('Jesus and Nicodemus')).toBeInTheDocument();
+    // The BSB's parallel-passage line under a heading is kept in the data but not shown.
+    expect(container.querySelector('article.chapter')?.textContent).not.toContain('(Genesis 22:1–10; Romans 5:6–11)');
     expect(container.querySelector('.reader')).toHaveClass('red-letters');
     expect(container.querySelector('.wj')?.textContent).toMatch(/Truly, truly/);
 

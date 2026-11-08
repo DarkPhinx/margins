@@ -8,7 +8,7 @@ import { RichText } from './RichText';
 import { useStudy } from './StudyContext';
 import { markAnswered } from './store';
 import { firstLine } from './text';
-import type { JournalItem, NoteItem, QuestionItem } from './types';
+import type { JournalItem, LinkItem, NoteItem, QuestionItem } from './types';
 import { deleteWithUndo } from './undo';
 
 export function formatDay(date: string): string {
@@ -54,6 +54,14 @@ export function ItemCard({ item, emphasis }: { item: NoteItem | QuestionItem; em
         )}
       </header>
       {item.text ? <RichText doc={item.body} /> : <p className="empty-text">Nothing written yet.</p>}
+      {item.kind === 'question' && (item.answerRefs ?? []).length > 0 && (
+        <p className="answered-by">
+          <span className="answer-label">Answered by</span>{' '}
+          {(item.answerRefs ?? []).map((r) => (
+            <AnchorLink key={`${r.start}-${r.end}`} range={r} />
+          ))}
+        </p>
+      )}
       {item.kind === 'question' && item.status === 'answered' && item.answerText && (
         <div className="answer">
           <span className="answer-label">Answer</span>
@@ -92,5 +100,38 @@ export function JournalRow({ item, onOpen }: { item: JournalItem; onOpen?: () =>
         {item.title && item.text && <span className="journal-snippet">{firstLine(item.text, 110)}</span>}
       </button>
     </li>
+  );
+}
+
+/** A link you made between two passages: both ends open the passage; the note says why. */
+export function LinkCard({ item, onOpen }: { item: LinkItem; onOpen?: (target: VerseRange) => void }) {
+  const [a, b] = item.anchors as [VerseRange, VerseRange];
+  const navigate = useNavigate();
+  const { place } = useStudy();
+  const go =
+    onOpen ??
+    ((target: VerseRange) => {
+      const { book, chapter, verse } = parseVerseId(target.start);
+      navigate(readerPath(place?.translation ?? getSettings().translation, book, chapter, verse));
+    });
+  return (
+    <article className="item-card link-card" aria-label={`Link ${rangeLabel(a)} and ${rangeLabel(b)}`}>
+      <header className="item-head">
+        <span className="kind kind-link">Link</span>
+        <button type="button" className="anchor-link" onClick={() => go(a)}>
+          {rangeLabel(a)}
+        </button>
+        <span aria-hidden="true">↔</span>
+        <button type="button" className="anchor-link" onClick={() => go(b)}>
+          {rangeLabel(b)}
+        </button>
+      </header>
+      {item.note ? <p className="link-note">{item.note}</p> : null}
+      <footer className="item-actions">
+        <button type="button" className="danger" onClick={() => void deleteWithUndo(item.id, 'Link')}>
+          Delete
+        </button>
+      </footer>
+    </article>
   );
 }

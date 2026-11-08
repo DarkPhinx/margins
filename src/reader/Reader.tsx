@@ -6,6 +6,7 @@ import { getSettings, useSettings } from '../settings';
 import { ContinuousReader } from './ContinuousReader';
 import { PagedReader, type ReaderProps } from './PagedReader';
 import { SelectionBar } from '../study/SelectionBar';
+import { WordSelection } from '../words/WordSelection';
 import { useStudy } from '../study/StudyContext';
 import { StudyPanel } from '../study/StudyPanel';
 import { readerPath } from './nav';
@@ -46,6 +47,7 @@ function ReaderPage(props: ReaderProps) {
         {continuous ? <ContinuousReader {...props} resumeVerse={resumeVerse} /> : <PagedReader {...props} />}
         <StudyPanel />
         <SelectionBar />
+        <WordSelection translation={props.translation} />
     </div>
   );
 }

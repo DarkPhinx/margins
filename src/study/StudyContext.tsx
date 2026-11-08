@@ -8,7 +8,8 @@ export type StudyTab = 'chapter' | 'questions' | 'journal' | 'search';
 
 export type StudyView =
   | { type: 'item'; id: string; isNew?: boolean }
-  | { type: 'passage'; range: VerseRange; chapterOnly: boolean };
+  | { type: 'passage'; range: VerseRange; chapterOnly: boolean }
+  | { type: 'xrefs'; range: VerseRange };
 
 export interface Place {
   translation: TranslationId;

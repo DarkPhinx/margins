@@ -4,14 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import { formatRange } from '../bible/refParser';
 import { parseVerseId } from '../bible/verseId';
 import { chapterTitle, readerPath } from '../reader/nav';
-import { AnchorLink, formatDay, ItemCard, JournalRow, KIND_LABEL } from './ItemCard';
+import { AnchorLink, formatDay, ItemCard, JournalRow, KIND_LABEL, LinkCard } from './ItemCard';
 import { ItemView, preloadEditor } from './ItemView';
+import { XrefView } from '../xrefs/XrefView';
 import { InStudyPanel } from './RefLink';
 import { PassageView } from './PassageView';
 import { byStart, chapterRange, overlaps } from './ranges';
 import { useStudy, type StudyTab } from './StudyContext';
-import { createJournal, listByKind, search, setHighlight } from './store';
-import type { HighlightItem, JournalItem, NoteItem, QuestionItem } from './types';
+import { createJournal, deleteItem, listByKind, search, setHighlight } from './store';
+import { loadPassage } from './passage';
+import type { TranslationId } from '../bible/types';
+import type { HighlightItem, JournalItem, LinkItem, NoteItem, QuestionItem } from './types';
 import { dismissUndo, undoDelete, useUndo } from './undo';
 import { useChapterStudy } from './useChapterStudy';
 
@@ -22,18 +25,44 @@ const TABS: { id: StudyTab; label: string }[] = [
   { id: 'search', label: 'Search' },
 ];
 
+/** The words a word highlight covers, quoted (with its translation when that isn't the one being read). */
+function HighlightedWords({ item }: { item: HighlightItem }) {
+  const seg = item.segment!;
+  const { start: first, end: last } = item.anchors[0]!;
+  const [words, setWords] = useState('');
+  useEffect(() => {
+    let live = true;
+    void loadPassage(seg.translation as TranslationId, { start: first, end: last }).then((verses) => {
+      const text = verses
+        .map((v) => v.text.slice(v.id === first ? seg.start : 0, v.id === last ? seg.end : undefined))
+        .join(' ')
+        .trim();
+      if (live) setWords(text.length > 80 ? `${text.slice(0, 78)}…` : text);
+    });
+    return () => {
+      live = false;
+    };
+  }, [seg.translation, seg.start, seg.end, first, last]);
+  return (
+    <span className="highlight-words">
+      {words && `“${words}”`} <span className="highlight-translation">{seg.translation.toUpperCase()}</span>
+    </span>
+  );
+}
+
 function ChapterTab() {
-  const { place, selection } = useStudy();
+  const { place, selection, push } = useStudy();
   const study = useChapterStudy(place?.book ?? 'JHN', place?.chapter ?? 1);
   if (!place) return null;
   const written = study.items.filter((i): i is NoteItem | QuestionItem => i.kind === 'note' || i.kind === 'question').sort(byStart);
   const highlights = study.items.filter((i): i is HighlightItem => i.kind === 'highlight').sort(byStart);
   const journal = study.items.filter((i): i is JournalItem => i.kind === 'journal');
+  const links = study.items.filter((i): i is LinkItem => i.kind === 'link');
   const onSelection = selection ? written.filter((i) => i.anchors.some((a) => overlaps(a, selection))) : [];
   const rest = written.filter((i) => !onSelection.includes(i));
   const heading = <h3 className="panel-title">{chapterTitle(place.book, place.chapter)}</h3>;
 
-  if (!written.length && !highlights.length && !journal.length) {
+  if (!written.length && !highlights.length && !journal.length && !links.length) {
     return (
       <>
         {heading}
@@ -62,6 +91,20 @@ function ChapterTab() {
           ))}
         </section>
       )}
+      {links.length > 0 && (
+        <section>
+          <h4 className="panel-section">Links</h4>
+          {links.map((l) => (
+            <LinkCard
+              key={l.id}
+              item={l}
+              onOpen={(target) => {
+                push({ type: 'passage', range: target, chapterOnly: false });
+              }}
+            />
+          ))}
+        </section>
+      )}
       {journal.length > 0 && (
         <section>
           <h4 className="panel-section">Journal</h4>
@@ -80,11 +123,14 @@ function ChapterTab() {
               <li key={h.id}>
                 <span className={`swatch hl-${h.color}`} aria-hidden="true" />
                 <AnchorLink range={h.anchors[0]!} />
+                {h.segment && <HighlightedWords item={h} />}
                 <button
                   type="button"
                   className="link-btn"
-                  aria-label={`Remove highlight on ${formatRange(h.anchors[0]!)}`}
-                  onClick={() => void setHighlight(h.anchors[0]!, null)}
+                  aria-label={
+                    h.segment ? `Remove highlight on words in ${formatRange(h.anchors[0]!)}` : `Remove highlight on ${formatRange(h.anchors[0]!)}`
+                  }
+                  onClick={() => void (h.segment ? deleteItem(h.id) : setHighlight(h.anchors[0]!, null))}
                 >
                   Remove
                 </button>
@@ -269,6 +315,8 @@ export function StudyPanel() {
           <ItemView key={top.id} id={top.id} isNew={top.isNew} />
         ) : top?.type === 'passage' ? (
           <PassageView key={`${top.range.start}-${top.range.end}`} range={top.range} />
+        ) : top?.type === 'xrefs' ? (
+          <XrefView key={`${top.range.start}-${top.range.end}`} range={top.range} />
         ) : tab === 'chapter' ? (
           <ChapterTab />
         ) : tab === 'questions' ? (

@@ -51,10 +51,21 @@ describe('USFM parser', () => {
     ]);
   });
 
-  it('keeps a BSB Psalm title as part of verse 1 and a KJV title before it', () => {
-    const bsb = parseUsfm('\\id PSA\n\\c 3\n\\d \\v 1 A Psalm of David.\n\\q1 O LORD,', 'bsb', 'PSA').chapters[0]!;
+  it('keeps a Psalm title before verse 1 in both Bibles (the BSB’s files put verse 1’s marker before it)', () => {
+    const parsed = parseUsfm('\\id PSA\n\\c 3\n\\d \\v 1 A Psalm of David.\n\\b\n\\q1 O LORD, how my foes\n\\q1 \\v 2 Many', 'bsb', 'PSA');
+    expect(parsed.psalmTitlesMoved).toBe(1);
+    const bsb = parsed.chapters[0]!;
     expect(bsb.blocks[0]?.type).toBe('descriptive');
-    expect(inlines(bsb.blocks[0])[0]).toEqual({ type: 'verse', n: 1 });
+    expect(texts(bsb.blocks[0])).toBe('A Psalm of David.');
+    expect(inlines(bsb.blocks[0]).some((i) => i.type === 'verse')).toBe(false);
+    // Verse 1 starts with the psalm itself.
+    const first = bsb.blocks.find((b) => b.type === 'para')!;
+    expect(inlines(first)[0]).toEqual({ type: 'verse', n: 1 });
+    expect(texts(first)).toBe('O LORD, how my foes');
+    // Outside Psalms an opening line marked this way is part of verse 1 (Zechariah 12:1).
+    const zec = parseUsfm('\\id ZEC\n\\c 12\n\\d \\v 1 This is the burden.\n\\p Thus declares the LORD', 'bsb', 'ZEC');
+    expect(zec.psalmTitlesMoved).toBe(0);
+    expect(inlines(zec.chapters[0]!.blocks[0])[0]).toEqual({ type: 'verse', n: 1 });
     const kjv = parseUsfm('\\id PSA\n\\c 3\n\\d A Psalm of David.\n\\q1\n\\v 1 LORD,', 'kjv', 'PSA').chapters[0]!;
     expect(texts(kjv.blocks[0])).toBe('A Psalm of David.');
     expect(inlines(kjv.blocks[0]).some((i) => i.type === 'verse')).toBe(false);

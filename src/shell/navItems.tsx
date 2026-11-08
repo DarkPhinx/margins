@@ -58,4 +58,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
     to: () => '/notes',
     isActive: (p) => p === '/notes' || p.startsWith('/notes/'),
   },
+  {
+    id: 'original',
+    label: 'Original language',
+    icon: (
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <text x="2" y="17" fontSize="13" fill="currentColor" fontFamily="serif">אα</text>
+      </svg>
+    ),
+    to: () => '/original',
+    isActive: (p) => p === '/original' || p.startsWith('/original/'),
+  },
 ];

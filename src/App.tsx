@@ -8,6 +8,7 @@ import { StudyProvider } from './study/StudyContext';
 import { AppShell } from './shell/AppShell';
 import { JournalListPage } from './pages/JournalListPage';
 import { NotesPage } from './pages/NotesPage';
+import { OriginalSearchPage, OriginalVersePage, OriginalWordPage } from './words/OriginalPages';
 
 export function AppRoutes() {
   // Study state sits above the routes, so the panel and a selection survive
@@ -21,6 +22,10 @@ export function AppRoutes() {
           <Route path="/journal" element={<JournalListPage />} />
           <Route path="/journal/:id" element={<JournalPage />} />
           <Route path="/notes" element={<NotesPage />} />
+          <Route path="/original" element={<OriginalSearchPage />} />
+          <Route path="/original/search" element={<OriginalSearchPage />} />
+          <Route path="/original/verse/:range" element={<OriginalVersePage />} />
+          <Route path="/original/word/:strong" element={<OriginalWordPage />} />
           <Route path="/:translation/:book/:chapter" element={<Reader />} />
           <Route path="*" element={<Navigate replace to="/" />} />
         </Route>

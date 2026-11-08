@@ -691,3 +691,20 @@
   padding: 0.45rem 1.2rem;
   border-radius: 999px;
 }
+
+/* A highlight on some words: the words, quoted, in the Highlights list. */
+.highlight-words {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--scripture);
+  font-size: 0.9em;
+}
+.highlight-translation {
+  font-family: var(--ui);
+  font-size: 0.75em;
+  color: var(--faint);
+  letter-spacing: 0.04em;
+}

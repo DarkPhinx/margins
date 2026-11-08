@@ -18,6 +18,7 @@ import {
   setAnchors,
   setClock,
   setHighlight,
+  setSegmentHighlight,
 } from '../src/study/store';
 import { docFromText, textOf } from '../src/study/text';
 import type { HighlightItem, NoteItem } from '../src/study/types';
@@ -126,6 +127,57 @@ describe('highlights', () => {
     expect(await colours('MAT', 5)).toEqual([]);
   });
 
+  /** Word highlights in a chapter: [first verse, start, last verse, end, colour, translation]. */
+  const words = async (book: Parameters<typeof v>[0], chapter: number) =>
+    ((await itemsForChapter(book, chapter)).filter((i) => i.kind === 'highlight' && i.segment) as HighlightItem[])
+      .map((h) => [h.anchors[0]!.start % 1000, h.segment!.start, h.anchors[0]!.end % 1000, h.segment!.end, h.color, h.segment!.translation])
+      .sort((a, b) => (a[0] as number) - (b[0] as number) || (a[1] as number) - (b[1] as number) || String(a[5]).localeCompare(String(b[5])));
+
+  it('colours some words of a verse, alongside whole-verse highlights', async () => {
+    await setHighlight(r('JHN', 3, 16), 'green');
+    // "loved" in "For God so loved the world…"
+    await setSegmentHighlight('bsb', r('JHN', 3, 16), 11, 16, 'yellow');
+    expect(await words('JHN', 3)).toEqual([[16, 11, 16, 16, 'yellow', 'bsb']]);
+    expect(await colours('JHN', 3)).toHaveLength(2);
+    expect(await colours('JHN', 3)).toEqual(expect.arrayContaining([[16, 16, 'green'], [16, 16, 'yellow']]));
+  });
+
+  it('re-colours or clears part of a word highlight, splitting it, in that translation only', async () => {
+    await setSegmentHighlight('bsb', r('JHN', 3, 16), 0, 40, 'yellow');
+    await setSegmentHighlight('kjv', r('JHN', 3, 16), 0, 40, 'blue');
+    await setSegmentHighlight('bsb', r('JHN', 3, 16), 10, 20, 'pink');
+    await setSegmentHighlight('bsb', r('JHN', 3, 16), 30, 35, null);
+    expect(await words('JHN', 3)).toEqual([
+      [16, 0, 16, 10, 'yellow', 'bsb'],
+      [16, 0, 16, 40, 'blue', 'kjv'],
+      [16, 10, 16, 20, 'pink', 'bsb'],
+      [16, 20, 16, 30, 'yellow', 'bsb'],
+      [16, 35, 16, 40, 'yellow', 'bsb'],
+    ]);
+  });
+
+  it('colours words across verses and trims them at verse edges', async () => {
+    // From the middle of verse 16 to the middle of 18.
+    await setSegmentHighlight('bsb', r('JHN', 3, 16, 18), 20, 15, 'yellow');
+    // Removing verse 17 entirely (whole-verse remove) leaves the two ends, each within its own verse.
+    await setHighlight(r('JHN', 3, 17), null);
+    const left = await words('JHN', 3);
+    expect(left).toHaveLength(2);
+    expect(left[0]!.slice(0, 3)).toEqual([16, 20, 16]);
+    expect(left[0]![3]).toBeGreaterThan(1000);
+    expect(left[1]).toEqual([18, 0, 18, 15, 'yellow', 'bsb']);
+  });
+
+  it('clears word highlights in every translation when the whole verse is cleared', async () => {
+    await setSegmentHighlight('bsb', r('JHN', 3, 16), 11, 16, 'yellow');
+    await setSegmentHighlight('kjv', r('JHN', 3, 16), 11, 16, 'yellow');
+    await setHighlight(r('JHN', 3, 16), 'green');
+    expect(await words('JHN', 3)).toHaveLength(2);
+    await setHighlight(r('JHN', 3, 16), null);
+    expect(await words('JHN', 3)).toEqual([]);
+    expect(await colours('JHN', 3)).toEqual([]);
+  });
+
   it('splits correctly across a chapter boundary', () => {
     expect(subtractRange({ start: v('JHN', 2, 20), end: v('JHN', 3, 5) }, r('JHN', 3, 1))).toEqual([
       { start: v('JHN', 2, 20), end: v('JHN', 2, 25) },
@@ -188,5 +240,42 @@ describe('rich text', () => {
       ],
     };
     expect(textOf(doc)).toBe('One bold\nJn 3:16\nPs 23');
+  });
+});
+
+describe('links between passages', () => {
+  it('saves a link that shows on both passages, and survives a fresh connection', async () => {
+    const { createLink, linksFor } = await import('../src/study/store');
+    const link = await createLink(r('JHN', 3, 16), r('ROM', 5, 8), 'Love shown first');
+    expect((await linksFor(r('JHN', 3, 16))).map((l) => l.id)).toEqual([link.id]);
+    expect((await linksFor(r('ROM', 5, 6, 9))).map((l) => l.id)).toEqual([link.id]);
+    expect(await linksFor(r('JHN', 3, 17))).toEqual([]);
+    expect((await itemsForChapter('ROM', 5)).map((i) => i.kind)).toContain('link');
+
+    const reopened = new MarginsDB(db.name);
+    await reopened.open();
+    const stored = await reopened.items.get(link.id);
+    reopened.close();
+    expect(stored).toMatchObject({ kind: 'link', note: 'Love shown first', anchors: [r('JHN', 3, 16), r('ROM', 5, 8)], deletedAt: null });
+
+    await deleteItem(link.id);
+    expect(await linksFor(r('JHN', 3, 16))).toEqual([]);
+  });
+});
+
+describe('verses that answer a question', () => {
+  it('adds, ignores duplicates, removes, and keeps them across a fresh connection', async () => {
+    const { addAnswerRef, removeAnswerRef } = await import('../src/study/store');
+    const q = await createQuestion([r('ROM', 9, 13)], docFromText('What does hated mean?'));
+    await addAnswerRef(q.id, r('MAL', 1, 2, 3));
+    await addAnswerRef(q.id, r('LUK', 14, 26));
+    await addAnswerRef(q.id, r('MAL', 1, 2, 3));
+    const reopened = new MarginsDB(db.name);
+    await reopened.open();
+    const stored = (await reopened.items.get(q.id)) as { answerRefs?: unknown };
+    reopened.close();
+    expect(stored.answerRefs).toEqual([r('MAL', 1, 2, 3), r('LUK', 14, 26)]);
+    await removeAnswerRef(q.id, r('MAL', 1, 2, 3));
+    expect((await listByKind('question'))[0]!.answerRefs).toEqual([r('LUK', 14, 26)]);
   });
 });

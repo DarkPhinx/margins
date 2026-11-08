@@ -32,7 +32,8 @@ Automated checks cover structure; these need a person reading them in the app (`
 - [ ] John 3: headings (BSB), red letters, verse 16 intact.
 - [ ] John 7–8: bracket opens before 7:53 with a note, closes after 8:11, and John 8 shows the note beside the closing bracket.
 - [ ] Mark 16: bracket opens before verse 9 and closes after verse 20, with a note.
-- [ ] Psalm 3: title (in verse 1 for the BSB, before verse 1 for the KJV), poetry indents, Selah.
+- [ ] Psalm 3: title before verse 1 (in both Bibles), poetry indents, Selah.
+- [x] Psalm titles are never part of verse 1 (changed Nov 2026). The BSB's files put the verse 1 marker before each of its 116 Psalm titles; the build moves it to the start of the psalm's first line, as the KJV's files have it. The title is kept, shown above the psalm; it can't be selected as verse 1, and it isn't in verse 1's text (notes, previews, word links). Zechariah 12:1, marked the same way, is left alone: there that line really is the start of verse 1. The build fails if the count changes. `tests/usfm.test.ts`, `tests/bible-data.test.ts`
 - [ ] Psalm 119: 22 letter headings, 176 verses.
 - [ ] Jude: 25 verses, one chapter, no chapter number.
 - [ ] Revelation 12: ends at verse 17 ("And the dragon stood on the shore of the sea" in the BSB).

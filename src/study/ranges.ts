@@ -43,6 +43,24 @@ export function subtractRange(a: VerseRange, b: VerseRange): VerseRange[] {
   return out;
 }
 
+/**
+ * A point in the text, as one number that sorts in reading order: a verse and
+ * a character position in its plain text.
+ */
+const PER_VERSE = 100_000;
+export const textPoint = (verse: number, offset: number) => verse * PER_VERSE + offset;
+export const pointVerse = (p: number) => Math.floor(p / PER_VERSE);
+export const pointOffset = (p: number) => p % PER_VERSE;
+
+/** What is left of the stretch [a0, a1) after removing [b0, b1): none, one or two stretches. */
+export function subtractSpan([a0, a1]: [number, number], [b0, b1]: [number, number]): [number, number][] {
+  if (b1 <= a0 || a1 <= b0) return [[a0, a1]];
+  const out: [number, number][] = [];
+  if (a0 < b0) out.push([a0, b0]);
+  if (b1 < a1) out.push([b1, a1]);
+  return out;
+}
+
 export function sameBook(a: number, b: number): boolean {
   return parseVerseId(a).book === parseVerseId(b).book;
 }

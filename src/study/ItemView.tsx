@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { formatRange } from '../bible/refParser';
+import { findReferences, formatRange } from '../bible/refParser';
 import type { VerseRange } from '../bible/types';
 import { clearDraft, writeDraft, type DraftField } from './drafts';
 import { loadPassage, type PassageVerse } from './passage';
@@ -12,9 +12,19 @@ import { Picker } from '../reader/Picker';
 import { readerPath } from '../reader/nav';
 import { getSettings } from '../settings';
 import { chapterRange, rangeLabel } from './ranges';
-import { discardIfEmpty, getItem, markAnswered, saveAnswer, saveBody, saveJournalMeta, setAnchors } from './store';
+import {
+  addAnswerRef,
+  discardIfEmpty,
+  getItem,
+  markAnswered,
+  removeAnswerRef,
+  saveAnswer,
+  saveBody,
+  saveJournalMeta,
+  setAnchors,
+} from './store';
 import { emptyDoc } from './text';
-import type { RichDoc } from './types';
+import { isTextItem, type RichDoc } from './types';
 import { deleteWithUndo } from './undo';
 
 // The editor is large, so it is a separate file (also cached for offline use). It
@@ -126,7 +136,7 @@ export function ItemView({ id, isNew, layout = 'panel', onClose, closeRef }: Ite
   });
 
   if (item === undefined) return <p className="loading">Loading…</p>;
-  if (item === null || item.kind === 'highlight' || item.deletedAt !== null) {
+  if (item === null || !isTextItem(item) || item.deletedAt !== null) {
     return (
       <div className="item-view">
         <button type="button" className="link-btn" onClick={close}>
@@ -228,6 +238,11 @@ export function ItemView({ id, isNew, layout = 'panel', onClose, closeRef }: Ite
 
       {item.kind === 'question' && (
         <section className="answer-edit">
+          <AnsweringVerses
+            id={id}
+            refs={item.answerRefs ?? []}
+            onFollow={(r) => void followReference(r, false)}
+          />
           <label className="toggle-row">
             <span>
               <span className="toggle-label">Answered</span>
@@ -360,6 +375,64 @@ function ChapterTie({ id, anchors }: { id: string; anchors: VerseRange[] }) {
           }}
         />
       )}
+    </div>
+  );
+}
+
+/** Verses that answer a question: follow one, remove one, or type a new one. */
+function AnsweringVerses({ id, refs, onFollow }: { id: string; refs: VerseRange[]; onFollow: (r: VerseRange) => void }) {
+  const [text, setText] = useState('');
+  const typed = findReferences(text)[0]?.range ?? null;
+  const add = async () => {
+    if (!typed) return;
+    await addAnswerRef(id, typed);
+    setText('');
+  };
+  return (
+    <div className="answering">
+      <span className="toggle-label">Answered by</span>
+      {refs.length === 0 ? (
+        <p className="toggle-hint">Verses that answer this question. Add one here, or select verses while reading and tap Answer.</p>
+      ) : (
+        <ul className="answer-refs">
+          {refs.map((r) => (
+            <li key={`${r.start}-${r.end}`}>
+              <button type="button" className="anchor-link" onClick={() => onFollow(r)}>
+                {rangeLabel(r)}
+              </button>
+              <button
+                type="button"
+                className="link-btn"
+                aria-label={`Remove ${rangeLabel(r)}`}
+                onClick={() => void removeAnswerRef(id, r)}
+              >
+                ✕
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <form
+        className="answer-add"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void add();
+        }}
+      >
+        <label className="sr-only" htmlFor={`answer-${id}`}>
+          Add a verse that answers it
+        </label>
+        <input
+          id={`answer-${id}`}
+          type="text"
+          value={text}
+          placeholder="Add a verse, e.g. Rom 5:8"
+          onChange={(e) => setText(e.target.value)}
+        />
+        <button type="submit" className="secondary-btn" disabled={!typed}>
+          Add{typed ? ` ${rangeLabel(typed)}` : ''}
+        </button>
+      </form>
     </div>
   );
 }

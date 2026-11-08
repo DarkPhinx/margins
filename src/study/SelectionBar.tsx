@@ -1,13 +1,73 @@
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { parseVerseId } from '../bible/verseId';
+import { versePath } from '../words/OriginalPages';
 import { formatRange } from '../bible/refParser';
 import { useStudy } from './StudyContext';
-import { createNote, createQuestion, setHighlight } from './store';
+import { setHighlight } from './store';
+import { useVerseActions } from './VerseActions';
 import { HIGHLIGHT_COLORS } from './types';
 import { preloadEditor } from './ItemView';
 
-/** Actions for the selected verses: highlight, note, question. */
+/**
+ * Where a small pop-up should sit: just above an element, or below another if
+ * there isn't room above; always on screen and clear of the top bar.
+ */
+export function popupPosition(above: DOMRect, below: DOMRect, width: number, height: number): { top: number; left: number } {
+  const vw = document.documentElement.clientWidth || window.innerWidth;
+  const vh = window.innerHeight;
+  const bar = document.querySelector('.reader-bar')?.getBoundingClientRect().bottom ?? 0;
+  let top = above.top - height - 10;
+  if (top < bar + 8) top = below.bottom + 10;
+  top = Math.min(Math.max(top, bar + 8), vh - height - 8);
+  const left = Math.min(Math.max(above.left, 8), Math.max(8, vw - width - 8));
+  return { top, left };
+}
+
+function verseElement(id: number, last: boolean): Element | null {
+  const { book, chapter, verse } = parseVerseId(id);
+  const all = document.querySelectorAll(`article.chapter[data-scope="${book}.${chapter}"] [data-v="${verse}"]`);
+  return (last ? all[all.length - 1] : all[0]) ?? null;
+}
+
+/** Actions for the selected verses, in a small pop-up right above them. */
 export function SelectionBar() {
-  const { selection, setSelection, openNoteDialog } = useStudy();
+  const { selection, setSelection } = useStudy();
+  const navigate = useNavigate();
+  const barRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  // Keep the pop-up just above the selected verses as the page scrolls.
+  useLayoutEffect(() => {
+    if (!selection) return;
+    let frame = 0;
+    const place = () => {
+      frame = 0;
+      const first = verseElement(selection.start, false);
+      const last = verseElement(selection.end, true) ?? first;
+      const el = barRef.current;
+      if (!el) return;
+      if (!first || !last) {
+        // The verses aren't on the page (scrolled away): sit at the bottom centre instead.
+        const vw = document.documentElement.clientWidth || window.innerWidth;
+        setPos({ top: window.innerHeight - el.offsetHeight - 16, left: Math.max(8, (vw - el.offsetWidth) / 2) });
+        return;
+      }
+      setPos(popupPosition(first.getBoundingClientRect(), last.getBoundingClientRect(), el.offsetWidth, el.offsetHeight));
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(place);
+    };
+    place();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    return () => {
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      cancelAnimationFrame(frame);
+    };
+  }, [selection]);
+  const actions = useVerseActions();
 
   // Fetch the editor as soon as verses are selected, so it's ready when Note is tapped.
   useEffect(() => {
@@ -23,11 +83,19 @@ export function SelectionBar() {
     return () => window.removeEventListener('keydown', onKey);
   }, [selection, setSelection]);
 
-  if (!selection) return null;
+  const dialogs = actions.dialogs;
+  if (!selection) return dialogs || null;
   const label = formatRange(selection);
 
   return (
-    <div className="selection-bar" role="toolbar" aria-label={`Selected: ${label}`}>
+    <div
+      ref={barRef}
+      className="selection-bar floating"
+      // Laid out as the pop-up from the start (so its size is measured right), hidden until placed.
+      style={pos ? { top: pos.top, left: pos.left } : { visibility: 'hidden' }}
+      role="toolbar"
+      aria-label={`Selected: ${label}`}
+    >
       <span className="selection-label">{label}</span>
       <div className="swatches">
         {HIGHLIGHT_COLORS.map((c) => (
@@ -52,28 +120,16 @@ export function SelectionBar() {
           }}
         />
       </div>
+      {actions.buttons(selection, () => setSelection(null))}
       <button
         type="button"
-        className="bar-action"
-        onClick={async () => {
-          const note = await createNote([selection]);
-          // Close the bar so a key pressed before the editor has focus can't press this button again.
+        className="bar-action bar-original"
+        onClick={() => {
+          navigate(versePath(selection));
           setSelection(null);
-          openNoteDialog({ id: note.id, isNew: true });
         }}
       >
-        Note
-      </button>
-      <button
-        type="button"
-        className="bar-action"
-        onClick={async () => {
-          const q = await createQuestion([selection]);
-          setSelection(null);
-          openNoteDialog({ id: q.id, isNew: true });
-        }}
-      >
-        Question
+        Original language
       </button>
       <button type="button" className="bar-close" aria-label="Clear selection" onClick={() => setSelection(null)}>
         ✕

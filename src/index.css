@@ -166,8 +166,7 @@ button {
   margin: 0 0 0.9rem;
   text-indent: 1.25rem;
 }
-.heading + .para,
-.parallel-refs + .para {
+.heading + .para {
   text-indent: 0;
 }
 .para-embedded {
@@ -221,12 +220,6 @@ button {
   font-weight: 500;
   letter-spacing: 0.08em;
   margin: 1.75rem 0 0.4rem;
-}
-.parallel-refs {
-  font-family: var(--ui);
-  font-size: 0.8rem;
-  color: var(--faint);
-  margin: 0 0 0.6rem;
 }
 .division {
   text-align: center;

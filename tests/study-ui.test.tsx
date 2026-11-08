@@ -150,8 +150,8 @@ describe('the study panel', () => {
   it('previews only the first verse of a whole-chapter reference, and cuts long passages short', async () => {
     const { previewText } = await import('../src/study/passage');
     const ps = await previewText('bsb', { start: v('PSA', 23, 1), end: v('PSA', 23, 6) }, true);
-    // In the BSB the psalm's title is part of verse 1.
-    expect(ps).toBe('A Psalm of David. The LORD is my shepherd; I shall not want. …');
+    // A psalm's title isn't part of verse 1.
+    expect(ps).toBe('The LORD is my shepherd; I shall not want. …');
     const long = await previewText('bsb', { start: v('ROM', 8, 1), end: v('ROM', 8, 39) }, false);
     expect(long.length).toBeLessThanOrEqual(281);
     expect(long.endsWith('…')).toBe(true);

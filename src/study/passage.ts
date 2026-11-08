@@ -4,6 +4,7 @@ import { nextVerseId, previousVerseId } from '../bible/verseIndex';
 import { makeVerseId, parseVerseId } from '../bible/verseId';
 import type { ChapterDoc, TranslationId, VerseId, VerseRange } from '../bible/types';
 import { getProvider } from '../translations/registry';
+import { verseTexts } from '../bible/verseText';
 
 export interface PassageVerse {
   id: VerseId;
@@ -13,25 +14,7 @@ export interface PassageVerse {
   inRange: boolean;
 }
 
-/** Text of each verse in a chapter, without footnotes. Omitted verses are left out. */
-export function verseTexts(doc: ChapterDoc): Map<number, string> {
-  const out = new Map<number, string>();
-  let current = 0;
-  for (const block of doc.blocks) {
-    if (block.type !== 'para' && block.type !== 'descriptive') continue;
-    for (const item of block.inline) {
-      if (item.type === 'verse') {
-        current = item.n;
-        out.set(current, out.get(current) ?? '');
-      } else if (item.type === 'text' && current) {
-        out.set(current, (out.get(current) ?? '') + item.text);
-      }
-    }
-    if (current) out.set(current, `${out.get(current) ?? ''} `);
-  }
-  for (const [k, v] of out) out.set(k, v.replace(/\s+/g, ' ').trim());
-  return out;
-}
+export { verseTexts };
 
 async function chapterDoc(translation: TranslationId, book: ChapterDoc['book'], chapter: number): Promise<ChapterDoc> {
   const provider = getProvider(translation);

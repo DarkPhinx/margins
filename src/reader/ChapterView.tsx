@@ -1,11 +1,13 @@
-import { Fragment, useRef, type ReactNode } from 'react';
+import { Fragment, useMemo, useRef, type ReactNode } from 'react';
 import { OMITTED_EXPLANATION } from '../bible/manuscripts';
 import { noteLabels } from '../bible/prepare';
+import { textPositions } from '../bible/verseText';
 import { formatVerseId, makeVerseId } from '../bible/verseId';
 import type { Block, ChapterDoc, Inline, Note, NoteRun, TranslationMeta } from '../bible/types';
 import { Popup } from './Popup';
 import { useStudy } from '../study/StudyContext';
-import { useChapterStudy, type ChapterStudy } from '../study/useChapterStudy';
+import { useChapterStudy, type ChapterStudy, type VerseSegment } from '../study/useChapterStudy';
+import type { HighlightColor } from '../study/types';
 
 interface ChapterViewProps {
   doc: ChapterDoc;
@@ -50,6 +52,31 @@ interface RenderContext {
   onNotes: (verse: number) => void;
   /** The verse being rendered; carried across blocks. */
   current: { verse: number };
+  /** The block being rendered (its index in the chapter). */
+  block: number;
+  /** For word highlights: where each character falls in its verse's plain text. */
+  positions: () => Map<string, number[]>;
+}
+
+/**
+ * A verse's text run cut where word highlights start and end: [text, colour]
+ * pieces in order. Collapsed whitespace takes the colour of what follows it,
+ * so a space between two highlighted words is highlighted too.
+ */
+function cutForSegments(text: string, positions: number[], segments: VerseSegment[]): [string, HighlightColor | null][] {
+  const colorAt = (p: number) => segments.find((s) => p >= s.start && p < s.end)?.color ?? null;
+  const colors: (HighlightColor | null)[] = [];
+  for (let k = text.length - 1; k >= 0; k--) {
+    const p = positions[k] ?? -1;
+    colors[k] = p >= 0 ? colorAt(p) : (colors[k + 1] ?? null);
+  }
+  const out: [string, HighlightColor | null][] = [];
+  for (let k = 0; k < text.length; k++) {
+    const last = out[out.length - 1];
+    if (last && last[1] === colors[k]) last[0] += text[k];
+    else out.push([text[k]!, colors[k]!]);
+  }
+  return out;
 }
 
 function renderInline(items: Inline[], ctx: RenderContext, decorate: boolean): ReactNode[] {
@@ -93,16 +120,32 @@ function renderInline(items: Inline[], ctx: RenderContext, decorate: boolean): R
       case 'text': {
         const v = ctx.current.verse;
         const highlight = decorate && v ? ctx.study.highlights.get(v) : undefined;
-        const cls = [
-          item.jesus && 'wj',
-          item.added && 'add',
-          item.divineName && 'nd',
-          highlight && `hl hl-${highlight}`,
-          decorate && v && ctx.selected(v) && 'sel',
-        ]
-          .filter(Boolean)
-          .join(' ');
+        /** Classes for this run; a word highlight's colour shows over the verse's. */
+        const classes = (words: HighlightColor | null = null) =>
+          [
+            item.jesus && 'wj',
+            item.added && 'add',
+            item.divineName && 'nd',
+            words ? `hl hl-${words} hl-words` : highlight && `hl hl-${highlight}`,
+            decorate && v && ctx.selected(v) && 'sel',
+          ]
+            .filter(Boolean)
+            .join(' ');
+        const cls = classes();
         // In verse text, every run carries its verse so it can be hovered and clicked.
+        const segments = decorate && v ? (ctx.study.segments.get(v) ?? []).filter((s) => s.translation === ctx.meta.id) : [];
+        const positions = segments.length ? ctx.positions().get(`${ctx.block}:${i}`) : undefined;
+        if (decorate && v && positions) {
+          return (
+            <Fragment key={i}>
+              {cutForSegments(item.text, positions, segments).map(([text, color], k) => (
+                <span key={k} className={classes(color) || undefined} data-v={v}>
+                  {text}
+                </span>
+              ))}
+            </Fragment>
+          );
+        }
         if (decorate && v) {
           return (
             <span key={i} className={cls || undefined} data-v={v}>
@@ -178,6 +221,7 @@ export function ChapterView({ doc, meta, anchorIds = true }: ChapterViewProps) {
   const labels = noteLabels(doc);
   const notes = new Map(doc.notes.map((n) => [n.id, n]));
   const study = useChapterStudy(doc.book, doc.chapter);
+  const positions = useMemo(() => textPositions(doc), [doc]);
   const { selection, selectVerse, setSelection, setPanelOpen, setTab, openNoteDialog } = useStudy();
   const idOf = (verse: number) => makeVerseId(doc.book, doc.chapter, verse);
   const scope = `${doc.book}.${doc.chapter}`;
@@ -207,6 +251,8 @@ export function ChapterView({ doc, meta, anchorIds = true }: ChapterViewProps) {
       setPanelOpen(true);
     },
     current: { verse: 0 },
+    block: 0,
+    positions: () => positions,
   };
 
   /** Tints the whole verse under the pointer, without re-rendering the chapter. */
@@ -214,7 +260,8 @@ export function ChapterView({ doc, meta, anchorIds = true }: ChapterViewProps) {
     if (verse === hovered.current || !hoverStyle.current) return;
     hovered.current = verse;
     hoverStyle.current.textContent = verse
-      ? `@media (hover: hover) { .chapter[data-scope="${scope}"] [data-v="${verse}"] { background-color: var(--verse-hover); cursor: pointer; } }`
+      ? // Highlighted text keeps its colour under the pointer.
+        `@media (hover: hover) { .chapter[data-scope="${scope}"] [data-v="${verse}"] { cursor: pointer; } .chapter[data-scope="${scope}"] [data-v="${verse}"]:not(.hl) { background-color: var(--verse-hover); } }`
       : '';
   };
 
@@ -233,6 +280,7 @@ export function ChapterView({ doc, meta, anchorIds = true }: ChapterViewProps) {
   };
 
   const renderBlock = (block: Block, i: number): ReactNode => {
+    ctx.block = i;
     switch (block.type) {
       case 'heading':
         return block.level === 'acrostic' ? (
@@ -252,11 +300,9 @@ export function ChapterView({ doc, meta, anchorIds = true }: ChapterViewProps) {
           </div>
         );
       case 'parallelRefs':
-        return (
-          <p key={i} className="parallel-refs">
-            {block.text}
-          </p>
-        );
+        // The BSB's "(Matthew 5:3–12; Luke 6:20–23)" lines under headings are kept in the
+        // data but not shown in the reader.
+        return null;
       case 'descriptive':
         return (
           <p key={i} className="descriptive">

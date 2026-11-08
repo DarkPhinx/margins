@@ -1,0 +1,325 @@
+/* Phase 4: the original-language pop-ups and pages. */
+
+/* The action pop-ups sit just above the selected text, not at the bottom of the screen. */
+.selection-bar.floating,
+.study-open .selection-bar.floating {
+  bottom: auto;
+  transform: none;
+  max-width: min(27rem, calc(100vw - 16px));
+  justify-content: flex-start;
+  border-radius: 16px;
+  padding: 0.45rem 0.55rem;
+}
+.bar-original {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.word-popup .selection-label {
+  font-family: var(--scripture);
+  font-weight: 500;
+}
+
+/* Hebrew and Greek */
+.orig {
+  font-family: 'SBL Hebrew', 'Ezra SIL', 'Noto Serif Hebrew', var(--scripture);
+}
+.orig-gr {
+  font-family: var(--scripture);
+}
+.orig-he {
+  font-size: 1.15em;
+}
+.orig-search {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.25rem 0 1.25rem;
+}
+.orig-search input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 0.5rem 0.9rem;
+}
+.orig-search .primary-btn {
+  margin: 0;
+}
+.orig-intro p {
+  line-height: 1.6;
+}
+
+/* Results */
+.orig-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.orig-result {
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+  margin-bottom: 0.75rem;
+  background: var(--paper-raised);
+}
+.orig-result-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.75rem;
+}
+.orig-lemma-sm {
+  font-size: 1.35rem;
+}
+.orig-translit {
+  font-style: italic;
+  color: var(--ink-soft);
+}
+.orig-strong {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--faint);
+}
+.orig-gloss {
+  color: var(--ink);
+}
+.orig-result-meta {
+  margin: 0.35rem 0;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+.orig-result-actions .secondary-btn {
+  display: inline-block;
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+.orig-sample {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+}
+.orig-snippet {
+  display: block;
+  padding: 0.35rem 0;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-family: var(--scripture);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.orig-snippet:hover {
+  color: var(--ink);
+}
+.orig-snippet-ref {
+  font-family: var(--ui);
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--accent);
+}
+.orig-snippet mark,
+.eng-word.current {
+  background: var(--hl-yellow);
+  color: inherit;
+  border-radius: 2px;
+}
+
+/* A verse, word by word */
+.orig-verse-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+.orig-verse-head h2 {
+  margin: 0;
+  font-family: var(--scripture);
+  font-weight: 500;
+  font-size: 1.3rem;
+  margin-right: auto;
+}
+.orig-verse-head .segmented {
+  margin: 0;
+}
+.orig-verse-head .secondary-btn {
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+.orig-verse-nav {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.75rem 0;
+  font-size: 0.85rem;
+}
+.orig-verse-nav a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.orig-verse {
+  margin: 1rem 0 1.5rem;
+}
+.orig-verse-ref {
+  font-size: 0.95rem;
+  margin: 0 0 0.25rem;
+}
+.orig-english {
+  font-family: var(--scripture);
+  font-size: 1.1rem;
+  line-height: 1.75;
+  margin: 0.25rem 0 0.75rem;
+}
+.eng-word {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 4px;
+}
+.eng-word:hover {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
+.orig-words {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.orig-words.rtl {
+  direction: rtl;
+}
+.orig-word-card {
+  display: grid;
+  justify-items: center;
+  gap: 0.05rem;
+  min-width: 4.5rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--paper-raised);
+  color: var(--ink);
+  text-decoration: none;
+  direction: ltr;
+}
+.orig-word-card:hover {
+  border-color: var(--accent);
+}
+.orig-word-card .orig {
+  font-size: 1.25rem;
+}
+.orig-word-card .orig-translit,
+.orig-word-card .orig-gloss {
+  font-size: 0.8rem;
+}
+
+/* One word in depth */
+.orig-word-head {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.orig-lemma {
+  font-size: 2.4rem;
+  line-height: 1.2;
+}
+.orig-word-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: baseline;
+  margin-top: 0.25rem;
+}
+.orig-pos {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+.orig-word-gloss {
+  font-family: var(--scripture);
+  font-size: 1.2rem;
+  margin: 0.4rem 0 0;
+}
+.orig-context {
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 0.25rem 0.9rem 0.5rem;
+  margin: 0.75rem 0;
+  background: var(--paper-raised);
+}
+.orig-context .panel-section a {
+  color: var(--accent);
+}
+.orig-context-form {
+  margin: 0.25rem 0;
+  font-size: 1.1rem;
+}
+.orig-grammar {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+.orig-definition {
+  font-family: var(--scripture);
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+.usage-bars {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+  font-size: 0.75rem;
+}
+.usage-bars li {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr 2.5rem;
+  align-items: center;
+  gap: 0.5rem;
+}
+.usage-bars li.none {
+  opacity: 0.4;
+}
+.usage-book {
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.usage-bar {
+  height: 0.55rem;
+  min-width: 1px;
+  border-radius: 3px;
+  background: var(--faint);
+}
+.usage-bars li.current .usage-bar {
+  background: var(--accent);
+}
+.usage-bars li.current .usage-book {
+  color: var(--accent);
+  font-weight: 600;
+}
+.usage-n {
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+.every-verse-book h4 {
+  margin: 1rem 0 0.25rem;
+  font-size: 0.85rem;
+}
+.every-verse-book ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Which verse(s) Note, Question and the rest apply to, beside the selected words. */
+.word-popup .selection-ref {
+  font-family: var(--ui);
+  font-size: 0.8rem;
+  color: var(--faint);
+  white-space: nowrap;
+}

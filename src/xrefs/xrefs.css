@@ -1,0 +1,159 @@
+/* Phase 3: cross-references, links and answering verses. */
+
+.xref-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.xref-section-head .link-btn {
+  font-size: 0.8rem;
+}
+.xref-list {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+}
+.xref-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.1rem 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.xref-ref {
+  justify-self: start;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-weight: 600;
+  color: var(--accent);
+  text-align: left;
+}
+.xref-ref:hover {
+  text-decoration: underline;
+}
+.xref-votes {
+  font-size: 0.72rem;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+.xref-text {
+  grid-column: 1 / -1;
+  font-family: var(--scripture);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.link-row .xref-remove {
+  grid-row: 1;
+  grid-column: 2;
+  font-size: 0.75rem;
+}
+.xref-credit {
+  margin-top: 1rem;
+  font-size: 0.72rem;
+  color: var(--faint);
+}
+
+/* Link dialog and answer picker */
+.link-dialog,
+.answer-picker {
+  max-width: 34rem;
+}
+.field {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+.field input,
+.field textarea,
+.answer-add input {
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  min-width: 0;
+}
+.field textarea {
+  resize: vertical;
+}
+.link-target {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+}
+.link-preview {
+  font-family: var(--scripture);
+  color: var(--ink-soft);
+}
+.field-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+  margin: 0.4rem 0 0;
+}
+.link-dialog .item-view-foot,
+.answer-picker .item-view-foot {
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+.done-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.answer-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+.kind-link {
+  color: var(--journal);
+}
+.link-note {
+  margin: 0.25rem 0 0;
+}
+
+/* Answering verses */
+.answering {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.answer-refs {
+  list-style: none;
+  margin: 0.4rem 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+}
+.answer-refs li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.answer-refs .link-btn {
+  padding: 0 0.2rem;
+  font-size: 0.75rem;
+  color: var(--faint);
+}
+.answer-add {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+.answer-add input {
+  flex: 1;
+}
+.answered-by {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.6rem;
+  margin: 0.4rem 0 0;
+}

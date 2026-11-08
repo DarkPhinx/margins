@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "data": "tsx scripts/build-bibles.ts",
+    "data": "tsx scripts/build-bibles.ts && tsx scripts/build-xrefs.ts && tsx scripts/build-words.ts",
     "predev": "npm run data",
     "dev": "vite",
     "prebuild": "npm run data",

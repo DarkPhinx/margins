@@ -16,6 +16,104 @@
       "url": "https://ebible.org/Scriptures/eng-kjv2006_usfm.zip",
       "sha256": "069646cd8722f6d57750d3b35d378181f9446dc3abeb81a554fd51b57c928689",
       "license": "Public domain. Letters patent mean printing in the UK, or importing printed copies, needs permission."
+    },
+    {
+      "id": "openbible",
+      "name": "OpenBible.info cross references (with votes), file dated 2026-11-02",
+      "file": "openbible-cross-references.zip",
+      "url": "https://a.openbible.info/data/cross-references.zip",
+      "sha256": "24f07bcd61280f9dc0c5a451151fc9c9d0d2e45fe0cf3c903b5db4ca6b878878",
+      "license": "Creative Commons Attribution 4.0 (CC BY). Credit: OpenBible.info."
+    },
+    {
+      "id": "tsk",
+      "name": "Treasury of Scripture Knowledge (CrossWire SWORD module TSK 1.4)",
+      "file": "crosswire-tsk.zip",
+      "url": "https://www.crosswire.org/ftpmirror/pub/sword/packages/rawzip/TSK.zip",
+      "sha256": "6784c7099465995a8e66f02ead82b0bca66603c1bdeaf8332949774b7bfd4293",
+      "license": "Public domain (module DistributionLicense=Public Domain; original work c. 1880)."
+    },
+    {
+      "id": "tahot-gen-deu",
+      "name": "STEPBible TAHOT-Gen-Deu (commit 5de0a47)",
+      "file": "TAHOT-Gen-Deu.txt",
+      "cached": true,
+      "url": "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/5de0a47f35f0fc13dfe1430d104e5db8a4285f9c/Translators%20Amalgamated%20OT%2BNT/TAHOT%20Gen-Deu%20-%20Translators%20Amalgamated%20Hebrew%20OT%20-%20STEPBible.org%20CC%20BY.txt",
+      "sha256": "7763ef367bb0e6e1c1a95fb9b652e1d611b2481827611433e82abbf229216d70",
+      "license": "Creative Commons Attribution 4.0 (CC BY). Credit: STEP Bible, www.STEPBible.org."
+    },
+    {
+      "id": "tahot-jos-est",
+      "name": "STEPBible TAHOT-Jos-Est (commit 5de0a47)",
+      "file": "TAHOT-Jos-Est.txt",
+      "cached": true,
+      "url": "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/5de0a47f35f0fc13dfe1430d104e5db8a4285f9c/Translators%20Amalgamated%20OT%2BNT/TAHOT%20Jos-Est%20-%20Translators%20Amalgamated%20Hebrew%20OT%20-%20STEPBible.org%20CC%20BY.txt",
+      "sha256": "b79add01a8c95673e31ec3ab8ad86183d2312cd96421ddf21f3d1f74377526a7",
+      "license": "Creative Commons Attribution 4.0 (CC BY). Credit: STEP Bible, www.STEPBible.org."
+    },
+    {
+      "id": "tahot-job-sng",
+      "name": "STEPBible TAHOT-Job-Sng (commit 5de0a47)",
+      "file": "TAHOT-Job-Sng.txt",
+      "cached": true,
+      "url": "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/5de0a47f35f0fc13dfe1430d104e5db8a4285f9c/Translators%20Amalgamated%20OT%2BNT/TAHOT%20Job-Sng%20-%20Translators%20Amalgamated%20Hebrew%20OT%20-%20STEPBible.org%20CC%20BY.txt",
+      "sha256": "e0416880bb78f46715bb17ce526b623c3051da0ef83f7bf83beaad350e6272e8",
+      "license": "Creative Commons Attribution 4.0 (CC BY). Credit: STEP Bible, www.STEPBible.org."
+    },
+    {
+      "id": "tahot-isa-mal",
+      "name": "STEPBible TAHOT-Isa-Mal (commit 5de0a47)",
+      "file": "TAHOT-Isa-Mal.txt",
+      "cached": true,
+      "url": "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/5de0a47f35f0fc13dfe1430d104e5db8a4285f9c/Translators%20Amalgamated%20OT%2BNT/TAHOT%20Isa-Mal%20-%20Translators%20Amalgamated%20Hebrew%20OT%20-%20STEPBible.org%20CC%20BY.txt",
+      "sha256": "d5a609f5a4b9f7757a2615e55877b07f9f6931a8afccef012c0b4bf662caf540",
+      "license": "Creative Commons Attribution 4.0 (CC BY). Credit: STEP Bible, www.STEPBible.org."
+    },
+    {
+      "id": "tagnt-mat-jhn",
+      "name": "STEPBible TAGNT-Mat-Jhn (commit 5de0a47)",
+      "file": "TAGNT-Mat-Jhn.txt",
+      "cached": true,
+      "url": "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/5de0a47f35f0fc13dfe1430d104e5db8a4285f9c/Translators%20Amalgamated%20OT%2BNT/TAGNT%20Mat-Jhn%20-%20Translators%20Amalgamated%20Greek%20NT%20-%20STEPBible.org%20CC-BY.txt",
+      "sha256": "d4c0c820fdf9f2b450c9f96ce6103d6875028affd2e44094d753f1329ca1fd85",
+      "license": "Creative Commons Attribution 4.0 (CC BY). Credit: STEP Bible, www.STEPBible.org."
+    },
+    {
+      "id": "tagnt-act-rev",
+      "name": "STEPBible TAGNT-Act-Rev (commit 5de0a47)",
+      "file": "TAGNT-Act-Rev.txt",
+      "cached": true,
+      "url": "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/5de0a47f35f0fc13dfe1430d104e5db8a4285f9c/Translators%20Amalgamated%20OT%2BNT/TAGNT%20Act-Rev%20-%20Translators%20Amalgamated%20Greek%20NT%20-%20STEPBible.org%20CC-BY.txt",
+      "sha256": "122040eeeaeba50d6abbf67b39cacaff687211bda69b080e5d53927c830d9968",
+      "license": "Creative Commons Attribution 4.0 (CC BY). Credit: STEP Bible, www.STEPBible.org."
+    },
+    {
+      "id": "tbesh",
+      "name": "STEPBible TBESH (commit 5de0a47)",
+      "file": "TBESH.txt",
+      "cached": true,
+      "url": "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/5de0a47f35f0fc13dfe1430d104e5db8a4285f9c/Lexicons/TBESH%20-%20Translators%20Brief%20lexicon%20of%20Extended%20Strongs%20for%20Hebrew%20-%20STEPBible.org%20CC%20BY.txt",
+      "sha256": "848eef2ac16753a43694897dbb9e8f266725e7cc9da4809f367ee5b990f05dbb",
+      "license": "Creative Commons Attribution 4.0 (CC BY). Credit: STEP Bible, www.STEPBible.org."
+    },
+    {
+      "id": "tbesg",
+      "name": "STEPBible TBESG (commit 5de0a47)",
+      "file": "TBESG.txt",
+      "cached": true,
+      "url": "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/5de0a47f35f0fc13dfe1430d104e5db8a4285f9c/Lexicons/TBESG%20-%20Translators%20Brief%20lexicon%20of%20Extended%20Strongs%20for%20Greek%20-%20STEPBible.org%20CC%20BY.txt",
+      "sha256": "734a5b64a1152f67604bf09d32f15c0ba537151961752fcf168087b41b4d93ea",
+      "license": "Creative Commons Attribution 4.0 (CC BY). Credit: STEP Bible, www.STEPBible.org."
+    },
+    {
+      "id": "bsb-tables",
+      "name": "Berean Standard Bible translation tables (interlinear word links)",
+      "file": "bsb_tables.tsv",
+      "cached": true,
+      "url": "https://bereanbible.com/bsb_tables.tsv",
+      "sha256": "aa2a9a0f004d015738cd1839c7c56c3be2549e0d4f4537090c2017268c223c60",
+      "license": "Public domain: \"The Berean Bible and Majority Bible texts are officially placed into the public domain as of April 30, 2023. Licensing is not required for any use.\" (berean.bible/licensing.htm)"
     }
-  ]
+  ],
+  "note": "Sources marked \"cached\" are too large to commit: npm run data downloads them from the pinned URL into data/cache/ (ignored) and refuses any file whose SHA-256 differs."
 }

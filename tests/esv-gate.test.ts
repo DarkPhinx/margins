@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { checkEsvGate } from '../build/esv-gate';
-import { NEVER_CACHE, pwaOptions } from '../build/pwa';
+import { NEVER_CACHE, pwaOptions, WORD_DATA } from '../build/pwa';
 import { ESV_COPYRIGHT_NOTICE } from '../src/esv/notice';
 
 describe('ESV feature flag gate', () => {
@@ -40,7 +40,12 @@ describe('service worker never caches ESV requests', () => {
   it('excludes ESV URLs from navigation fallback and runtime caching', () => {
     for (const url of esvUrls) expect(NEVER_CACHE.some((re) => re.test(url))).toBe(true);
     expect(pwaOptions.workbox?.navigateFallbackDenylist).toBe(NEVER_CACHE);
-    expect(pwaOptions.workbox?.runtimeCaching).toEqual([]);
+    // The only runtime cache is the original-language word data, and no ESV address can match it.
+    const runtime = pwaOptions.workbox?.runtimeCaching ?? [];
+    expect(runtime).toHaveLength(1);
+    expect(runtime[0]!.urlPattern).toBe(WORD_DATA);
+    for (const url of esvUrls) expect(WORD_DATA.test(url)).toBe(false);
+    expect(WORD_DATA.test('/words/lex/G00.json?v=abc123')).toBe(true);
     expect(pwaOptions.workbox?.globIgnores).toContain('**/*esv*');
   });
 
@@ -66,7 +71,10 @@ describe('service worker never caches ESV requests', () => {
     expect(precached.filter((u) => /esv/i.test(u))).toEqual([]);
     expect(precached.filter((u) => u.startsWith('bibles/'))).toHaveLength(132);
     // Only the navigation route is registered; it carries the ESV deny list.
-    expect(sw.match(/registerRoute\(/g)).toHaveLength(1);
+    // The navigation route (with the ESV deny list) and the word-data cache.
+    expect(sw.match(/registerRoute\(/g)).toHaveLength(2);
+    expect(sw).toContain('margins-words');
+    expect(precached.filter((u) => u.startsWith('words/'))).toEqual([]);
     expect(sw).toMatch(/denylist:\[\/api\\\\?\.esv\\\\?\.org\/i/);
     const files = readdirSync(join(dist, 'assets')).filter((f) => /\.(js|css)$/.test(f));
     for (const f of files) {

@@ -4,7 +4,8 @@ import { RefLink } from './RefLink';
 import type { RichDoc, RichNode } from './types';
 
 /** Splits text into plain runs and reference links. */
-function withReferences(text: string, key: string): ReactNode[] {
+/** Plain text with every verse reference turned into a link. */
+export function withReferences(text: string, key: string): ReactNode[] {
   const out: ReactNode[] = [];
   let pos = 0;
   for (const ref of findReferences(text)) {

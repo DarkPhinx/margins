@@ -73,6 +73,23 @@ describe('generated Bibles', () => {
     expect(kjv.blocks[0]?.type).toBe('descriptive');
   });
 
+  it('keeps every Psalm title out of verse 1, in both Bibles', () => {
+    for (const t of ['bsb', 'kjv'] as const) {
+      let titles = 0;
+      for (let c = 1; c <= 150; c++) {
+        const doc = loadChapter(t, 'PSA', c);
+        for (const b of doc.blocks) {
+          if (b.type !== 'descriptive') continue;
+          titles++;
+          expect(b.inline.some((i) => i.type === 'verse'), `${t} Psalm ${c}`).toBe(false);
+        }
+      }
+      expect(titles, t).toBeGreaterThanOrEqual(116);
+    }
+    expect(verseText(loadChapter('bsb', 'PSA', 18), 1)).toBe('I love You, O LORD, my strength.');
+    expect(verseText(loadChapter('bsb', 'PSA', 51), 1)).toMatch(/^Have mercy on me, O God/);
+  });
+
   it('keeps Psalm 119’s 22 letter headings and 176 verses', () => {
     for (const t of ['bsb', 'kjv'] as const) {
       const doc = loadChapter(t, 'PSA', 119);

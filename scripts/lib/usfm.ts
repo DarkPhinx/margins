@@ -19,6 +19,8 @@ import type {
 export interface ParsedBook {
   chapters: ChapterDoc[];
   redLetterSpans: number;
+  /** Psalm titles that had verse 1's marker before them (see psalmTitlesBeforeVerse). */
+  psalmTitlesMoved: number;
 }
 
 const HEADER_LINE = /^\\(id|usfm|h|toc[123]|mt[12]|rem|ide)\b.*$/gm;
@@ -108,6 +110,27 @@ function mergeDivisionSubtitles(blocks: Block[]): Block[] {
     out.push(block);
   }
   return out;
+}
+
+/**
+ * A Psalm's title isn't part of verse 1 in English Bibles: verse 1 starts with
+ * the psalm itself. The BSB's files open the title with the verse 1 marker
+ * ("\d \v 1 For the choirmaster…"), so the marker moves to the start of the
+ * first line after the title, as in the KJV's files. Nothing is removed.
+ * (Only Psalms: Zechariah 12:1's opening line really is part of verse 1.)
+ */
+export function psalmTitlesBeforeVerse(blocks: Block[]): number {
+  let moved = 0;
+  blocks.forEach((block, b) => {
+    if (block.type !== 'descriptive' || block.inline[0]?.type !== 'verse') return;
+    const next = blocks.slice(b + 1).find((x): x is Extract<Block, { type: 'para' }> => x.type === 'para' && x.inline.some((i) => i.type === 'text'));
+    if (!next) return;
+    const marker = block.inline.shift()!;
+    trimInline(block.inline);
+    next.inline.unshift(marker);
+    moved++;
+  });
+  return moved;
 }
 
 export function parseUsfm(source: string, translation: TranslationId, book: BookId): ParsedBook {
@@ -301,6 +324,10 @@ export function parseUsfm(source: string, translation: TranslationId, book: Book
   if (jesus || added !== 0 || divineName !== 0 || wordDepth !== 0 || refDepth !== 0) {
     throw new Error(`${book}: unbalanced character markers at end of book`);
   }
-  for (const chapter of chapters) chapter.blocks = mergeDivisionSubtitles(chapter.blocks);
-  return { chapters, redLetterSpans: spans };
+  let psalmTitlesMoved = 0;
+  for (const chapter of chapters) {
+    chapter.blocks = mergeDivisionSubtitles(chapter.blocks);
+    if (book === 'PSA') psalmTitlesMoved += psalmTitlesBeforeVerse(chapter.blocks);
+  }
+  return { chapters, redLetterSpans: spans, psalmTitlesMoved };
 }

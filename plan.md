@@ -88,8 +88,9 @@ Goal: connecting passages becomes easy.
 • Cross-references for a single verse or a whole passage (merged and ranked by votes), from OpenBible.info and the Treasury of Scripture Knowledge.
 • Cross-references open in a side panel without losing your place.
 • Linking passages together, and linking verses to a question as answers.
-• A visible connection trail of where you've been.
-Done when: cross-references are accurate for sample passages; links and trails save correctly.
+• (Removed, Nov 2026, at the owner's request: a visible connection trail of where you've been. A different idea along these lines may come later.)
+• Built (Nov 2026): sources are OpenBible.info's cross references (CC BY 4.0, credited) and CrossWire's public-domain TSK module (the original work, not a modern enhanced edition), pinned with checksums. 391,458 references, bundled per book and cached offline (2.3 MB compressed). Shown as the top 10 by votes with "Show all"; TSK-only references follow the voted ones; down-voted ones are hidden. Links are made from the selection bar (type the other passage, optional note) and show on both passages and on the Notes page. Selected verses can be added as answers to a question. The BSB's parallel-passage lines under headings are kept in the data but not shown.
+Done when: cross-references are accurate for sample passages; links save correctly. Checklist: docs/phase-3-done.md.
 Phase 4 — Word Lookup
 Goal: the original languages one tap away.
 • Tap a word to see the Hebrew or Greek, extended Strong's number, in-context gloss, and range of meanings (STEPBible data, credited).
@@ -99,7 +100,8 @@ Linking English words to STEPBible, per translation:
 • BSB: use the BSB's public-domain interlinear tables for word-by-word links.
 • ESV: automatic word-by-word alignment using the BSB as a bridge. Match ESV words to BSB words (exact and root-word matching), use an aligner such as awesome-align or SimAlign for the rest, and store only the links (e.g. word 5 → G26), never the ESV text. When confidence is low, show that verse's original-language words with the best guess highlighted so the user can pick.
 • Ask Crossway whether a word-alignment license is available.
-Done when: lookups work for sample verses in both Testaments.
+• Built (Nov 2026): an "Original language" area in the sidebar with one search box for a reference, an English word, Hebrew/Greek, a transliteration or a Strong's number. A word search lists the original words with sample verses ("Go deeper on this word"); a verse shows word by word, with the English linked both ways. A word page shows the word in its verse with plain-English grammar, its range of meanings, usage by book and across its Testament, and every verse. From the Bible: the verse pop-up (now floating just above the selected verses) has "Original language", and selecting a word or phrase offers "Original language for this word" / "Whole verse" / "These verses", and the highlighter colours for just those words (whole-verse highlighting stays in the verse pop-up; word highlights belong to one translation's text), plus the verse pop-up's Note, Question, Cross-refs, Link and Answer, applied to the whole verse(s). Data: STEPBible TAHOT/TAGNT and TBESH/TBESG lexicons (CC BY, credited) and the BSB tables, pinned with checksums and downloaded at build time (about 190 MB, not committed); 444,725 Hebrew/Greek words in all 31,102 verses (verses the sources number differently are matched to ours by the BSB's own words; text missing from the Leningrad Codex comes from STEP's restored text), English linked for 99.3% of BSB and 99.6% of KJV tagged words. Word data (12 MB compressed) is not precached: it is cached as it's used and then works offline. ESV alignment is deferred until there is an ESV key; asking Crossway about a licence is the owner's action.
+Done when: lookups work for sample verses in both Testaments. Checklist: docs/phase-4-done.md.
 Phase 5 — Accounts and Sync
 Goal: your studies on every device.
 • Supabase accounts and login.

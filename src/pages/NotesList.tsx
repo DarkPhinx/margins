@@ -1,26 +1,49 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useDeferredValue, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ItemCard } from '../study/ItemCard';
+import { ItemCard, LinkCard } from '../study/ItemCard';
+import { rangeLabel } from '../study/ranges';
 import { useStudy } from '../study/StudyContext';
 import { createNote, createQuestion, listByKind } from '../study/store';
-import type { NoteItem, QuestionItem } from '../study/types';
+import type { LinkItem, NoteItem, QuestionItem } from '../study/types';
 
-type Filter = 'all' | 'notes' | 'questions' | 'standalone';
+type Filter = 'all' | 'notes' | 'questions' | 'links' | 'standalone';
+type Listed = NoteItem | QuestionItem | LinkItem;
 
-async function allWritten(): Promise<(NoteItem | QuestionItem)[]> {
-  const [notes, questions] = await Promise.all([listByKind('note'), listByKind('question')]);
-  return [...notes, ...questions];
+const FILTER_LABEL: Record<Filter, string> = {
+  all: 'All',
+  notes: 'Notes',
+  questions: 'Questions',
+  links: 'Links',
+  standalone: 'Standalone',
+};
+
+async function allListed(): Promise<Listed[]> {
+  const [notes, questions, links] = await Promise.all([listByKind('note'), listByKind('question'), listByKind('link')]);
+  return [...notes, ...questions, ...links];
 }
 
 function normalise(s: string): string {
   return s.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '');
 }
 
+function searchable(i: Listed): string {
+  if (i.kind === 'link') return `${i.note}\n${i.anchors.map(rangeLabel).join(' ')}`;
+  return `${i.text}\n${i.kind === 'question' ? i.answerText : ''}`;
+}
+
+function matches(i: Listed, f: Filter): boolean {
+  if (f === 'notes') return i.kind === 'note';
+  if (f === 'questions') return i.kind === 'question';
+  if (f === 'links') return i.kind === 'link';
+  if (f === 'standalone') return i.kind !== 'link' && i.anchors.length === 0;
+  return true;
+}
+
 /**
- * Notes and questions, newest first, with the ways to write a standalone one
- * (not tied to any verse). With `limit` it shows only the latest few (for the
- * home page) and links to the full list.
+ * Notes, questions and links, newest first, with the ways to write a
+ * standalone note or question (not tied to any verse). With `limit` it shows
+ * only the latest few (for the home page) and links to the full list.
  */
 export function NotesList({ limit }: { limit?: number }) {
   const { openNoteDialog } = useStudy();
@@ -29,23 +52,17 @@ export function NotesList({ limit }: { limit?: number }) {
   const deferred = useDeferredValue(query);
 
   // A blank note isn't worth listing (one being written right now is in the pop-up).
-  const items = (useLiveQuery(allWritten, []) ?? [])
-    .filter((i) => i.text.trim() || (i.kind === 'question' && i.answerText.trim()))
+  const items = (useLiveQuery(allListed, []) ?? [])
+    .filter((i) => i.kind === 'link' || i.text.trim() || (i.kind === 'question' && i.answerText.trim()))
     .sort((a, b) => b.updatedAt - a.updatedAt);
   const words = normalise(deferred).split(/\s+/).filter(Boolean);
   const filtered = items.filter((i) => {
-    if (filter === 'notes' && i.kind !== 'note') return false;
-    if (filter === 'questions' && i.kind !== 'question') return false;
-    if (filter === 'standalone' && i.anchors.length > 0) return false;
+    if (!matches(i, filter)) return false;
     if (!words.length) return true;
-    const hay = normalise(`${i.text}\n${i.kind === 'question' ? i.answerText : ''}`);
+    const hay = normalise(searchable(i));
     return words.every((w) => hay.includes(w));
   });
   const shown = limit ? filtered.slice(0, limit) : filtered;
-  const count = (f: Filter) =>
-    items.filter((i) =>
-      f === 'all' ? true : f === 'notes' ? i.kind === 'note' : f === 'questions' ? i.kind === 'question' : i.anchors.length === 0,
-    ).length;
 
   return (
     <>
@@ -81,14 +98,14 @@ export function NotesList({ limit }: { limit?: number }) {
             id="notes-filter"
             className="search-input"
             type="search"
-            placeholder="Find in notes and questions"
+            placeholder="Find in notes, questions and links"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
           <div className="segmented" role="group" aria-label="Show">
-            {(['all', 'notes', 'questions', 'standalone'] as const).map((f) => (
+            {(Object.keys(FILTER_LABEL) as Filter[]).map((f) => (
               <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)}>
-                {`${f === 'all' ? 'All' : f === 'notes' ? 'Notes' : f === 'questions' ? 'Questions' : 'Standalone'} (${count(f)})`}
+                {`${FILTER_LABEL[f]} (${items.filter((i) => matches(i, f)).length})`}
               </button>
             ))}
           </div>
@@ -103,14 +120,12 @@ export function NotesList({ limit }: { limit?: number }) {
         <p className="empty-text">Nothing matches.</p>
       ) : (
         <div className="notes-list">
-          {shown.map((i) => (
-            <ItemCard key={i.id} item={i} />
-          ))}
+          {shown.map((i) => (i.kind === 'link' ? <LinkCard key={i.id} item={i} /> : <ItemCard key={i.id} item={i} />))}
         </div>
       )}
       {limit && items.length > limit && (
         <Link className="see-all" to="/notes">
-          All {items.length} notes and questions →
+          All {items.length} notes, questions and links →
         </Link>
       )}
     </>

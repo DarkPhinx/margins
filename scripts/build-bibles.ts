@@ -63,15 +63,24 @@ function readArchive(bytes: Uint8Array): Map<BookId, string> {
   return out;
 }
 
+/** Psalm titles whose source puts the verse 1 marker before them (moved after the title). */
+const PSALM_TITLES_MOVED: Record<string, number> = { bsb: 116, kjv: 0 };
+
 function parseTranslation(id: TranslationId, sources: Map<BookId, string>): ParsedTranslation {
   const chapters: ParsedTranslation['chapters'] = new Map();
   const spans: ParsedTranslation['spans'] = new Map();
+  let titlesMoved = 0;
   for (const book of BOOKS) {
     const source = sources.get(book.id);
     if (!source) throw new Error(`${id}: source missing ${book.id}`);
     const parsed = parseUsfm(source, id, book.id);
     chapters.set(book.id, parsed.chapters);
     spans.set(book.id, parsed.redLetterSpans);
+    titlesMoved += parsed.psalmTitlesMoved;
+  }
+  // The BSB's files put verse 1's marker before each Psalm title; the KJV's don't.
+  if (titlesMoved !== PSALM_TITLES_MOVED[id]) {
+    throw new Error(`${id}: moved verse 1 past ${titlesMoved} Psalm titles, expected ${PSALM_TITLES_MOVED[id]}`);
   }
   return { id, sources, chapters, spans };
 }
@@ -80,7 +89,8 @@ function main(): void {
   const manifest = JSON.parse(readFileSync(join(sourcesDir, 'SOURCES.json'), 'utf8')) as {
     sources: SourceEntry[];
   };
-  const archives = manifest.sources.map((entry) => {
+  // Only the two Bibles are needed here (other builds read their own sources).
+  const archives = manifest.sources.filter((entry) => entry.id === 'bsb' || entry.id === 'kjv').map((entry) => {
     const bytes = readFileSync(join(sourcesDir, entry.file));
     const actual = sha256(bytes);
     if (actual !== entry.sha256) {
