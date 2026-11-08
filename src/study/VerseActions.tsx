@@ -1,7 +1,8 @@
 /**
  * The study actions for some verses — Note, Question, Cross-refs, Link,
  * Answer — shared by the verse pop-up and the selected-words pop-up, so both
- * work the same way. They always apply to whole verses.
+ * work the same way. They always apply to whole verses. Signed out, Cross-refs
+ * works and the others explain that an account saves your study.
  */
 
 import { useState, type ReactNode } from 'react';
@@ -9,6 +10,7 @@ import type { VerseRange } from '../bible/types';
 import { AnswerPicker } from './AnswerPicker';
 import { LinkDialog } from './LinkDialog';
 import { useStudy } from './StudyContext';
+import { useNeedAccount } from '../sync/access';
 import { createNote, createQuestion } from './store';
 
 export function useVerseActions(): {
@@ -18,6 +20,8 @@ export function useVerseActions(): {
   dialogs: ReactNode;
 } {
   const { openNoteDialog, openView } = useStudy();
+  // Cross-refs are for everyone; the rest save something, so they need an account.
+  const needAccount = useNeedAccount();
   const [dialog, setDialog] = useState<{ kind: 'link' | 'answer'; range: VerseRange } | null>(null);
 
   const dialogs =
@@ -36,6 +40,7 @@ export function useVerseActions(): {
         onClick={async () => {
           // Close first, so a key pressed before the editor has focus can't press this button again.
           close();
+          if (needAccount('your notes')) return;
           const note = await createNote([range]);
           openNoteDialog({ id: note.id, isNew: true });
         }}
@@ -47,6 +52,7 @@ export function useVerseActions(): {
         className="bar-action"
         onClick={async () => {
           close();
+          if (needAccount('your questions')) return;
           const q = await createQuestion([range]);
           openNoteDialog({ id: q.id, isNew: true });
         }}
@@ -67,8 +73,9 @@ export function useVerseActions(): {
         type="button"
         className="bar-action"
         onClick={() => {
-          setDialog({ kind: 'link', range });
           close();
+          if (needAccount('passage links')) return;
+          setDialog({ kind: 'link', range });
         }}
       >
         Link
@@ -77,8 +84,9 @@ export function useVerseActions(): {
         type="button"
         className="bar-action"
         onClick={() => {
-          setDialog({ kind: 'answer', range });
           close();
+          if (needAccount('answers to your questions')) return;
+          setDialog({ kind: 'answer', range });
         }}
       >
         Answer

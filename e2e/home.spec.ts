@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 
 async function fresh(page: Page) {
   await page.goto('/');
@@ -6,7 +6,7 @@ async function fresh(page: Page) {
     localStorage.clear();
     localStorage.setItem('margins.settings.v1', JSON.stringify({ last: { book: 'JHN', chapter: 3, verse: 16 } }));
     await new Promise<void>((resolve) => {
-      const req = indexedDB.deleteDatabase('margins');
+      const req = indexedDB.deleteDatabase('margins-e2e-user');
       req.onsuccess = req.onerror = req.onblocked = () => resolve();
     });
   });

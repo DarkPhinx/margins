@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 
 /** Selects one word of a verse's text, as a double-click or long-press would. */
 async function selectWord(page: Page, verse: number, word: string) {

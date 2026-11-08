@@ -144,8 +144,19 @@ export async function discardIfEmpty(id: string): Promise<boolean> {
   if (!item || !isTextItem(item) || item.text.trim() || (item.kind === 'journal' && item.title.trim())) {
     return false;
   }
-  await db.items.delete(id);
+  await removeBlank([item]);
   return true;
+}
+
+/**
+ * Blank items are removed outright, unless they've already reached the
+ * account: then they're marked deleted, so other devices drop them too.
+ */
+async function removeBlank(items: StudyItem[]): Promise<void> {
+  const now = clock();
+  const synced = items.filter((i) => i.syncedVersion !== undefined);
+  await db.items.bulkDelete(items.filter((i) => i.syncedVersion === undefined).map((i) => i.id));
+  for (const i of synced) await db.items.update(i.id, { deletedAt: now, updatedAt: now });
 }
 
 /**
@@ -158,7 +169,7 @@ export async function discardEmptyJournals(): Promise<number> {
   const blank = (await db.items.where('kind').equals('journal').toArray()).filter(
     (i) => i.kind === 'journal' && i.deletedAt === null && !i.text.trim() && !i.title.trim() && i.createdAt < before,
   );
-  await db.items.bulkDelete(blank.map((i) => i.id));
+  await removeBlank(blank);
   return blank.length;
 }
 

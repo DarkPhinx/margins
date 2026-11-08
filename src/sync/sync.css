@@ -1,0 +1,341 @@
+/* Phase 5: signing in, sync status, and changes made on two devices. */
+
+/* Sign-in */
+.auth-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem 16px;
+  background: var(--paper);
+  color: var(--ink);
+}
+.auth-card {
+  width: min(24rem, 100%);
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  padding: 1.75rem 1.5rem;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.06);
+}
+.auth-brand {
+  font-family: var(--scripture);
+  font-size: 1.8rem;
+  text-align: center;
+}
+.auth-tagline {
+  text-align: center;
+  color: var(--ink-soft);
+  margin: 0.15rem 0 1.25rem;
+}
+.auth-card h1 {
+  font-family: var(--ui);
+  font-size: 1.05rem;
+  font-weight: 650;
+  margin: 0 0 0.75rem;
+}
+.auth-form {
+  display: grid;
+  gap: 0.75rem;
+}
+.auth-form label {
+  display: grid;
+  gap: 0.3rem;
+  font-family: var(--ui);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+.auth-form input {
+  font: inherit;
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 0.6rem 0.7rem;
+}
+.auth-form input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.auth-primary,
+.auth-google {
+  font: inherit;
+  font-family: var(--ui);
+  font-weight: 650;
+  border-radius: 10px;
+  padding: 0.65rem;
+  cursor: pointer;
+  width: 100%;
+}
+.auth-primary {
+  background: var(--accent);
+  color: var(--paper-raised);
+  border: 0;
+}
+.auth-google {
+  background: none;
+  color: var(--ink);
+  border: 1px solid var(--rule);
+}
+.auth-primary:disabled,
+.auth-google:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.auth-or {
+  text-align: center;
+  color: var(--faint);
+  font-size: 0.85rem;
+  margin: 0.75rem 0;
+}
+.auth-switch {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  font-family: var(--ui);
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+}
+.auth-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.auth-error {
+  color: var(--jesus);
+  margin: 0;
+  font-size: 0.9rem;
+}
+.auth-notice {
+  background: var(--notice);
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.9rem;
+}
+
+/* Sync status, in the sidebar above Settings */
+.sync-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  padding: 0 0.6rem 0.6rem;
+  font-family: var(--ui);
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--faint);
+  flex: none;
+}
+.sync-synced {
+  background: #5d9b5a;
+}
+.sync-syncing {
+  background: var(--accent);
+  animation: sync-pulse 1s ease-in-out infinite alternate;
+}
+.sync-error {
+  background: var(--jesus);
+}
+@keyframes sync-pulse {
+  to {
+    opacity: 0.3;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sync-syncing {
+    animation: none;
+  }
+}
+.sync-conflicts {
+  flex-basis: 100%;
+  text-align: left;
+  background: var(--notice);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+/* Changed on two devices */
+.conflict-intro {
+  color: var(--ink-soft);
+}
+.conflict-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1.25rem;
+}
+.conflict h3 {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+.conflict-copies {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+@media (max-width: 600px) {
+  .conflict-copies {
+    grid-template-columns: 1fr;
+  }
+}
+.conflict-copy {
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  min-width: 0;
+}
+.conflict-copy h4 {
+  margin: 0;
+  font-family: var(--ui);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--faint);
+}
+.conflict-when {
+  margin: 0.15rem 0 0.4rem;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+.conflict-title {
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+.conflict-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 12rem;
+  overflow: auto;
+  font-family: var(--scripture);
+}
+.conflict-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+/* Settings → Account */
+.account-sync {
+  color: var(--ink-soft);
+}
+.account-signout {
+  background: var(--notice);
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+}
+.bar-action.danger {
+  border-color: var(--jesus);
+  color: var(--jesus);
+}
+
+/* Signed out: ways to sign in */
+.signin-prompt {
+  flex-basis: 100%;
+  font-family: var(--ui);
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+}
+.sidebar-signin {
+  display: grid;
+  gap: 0.1rem;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-family: var(--ui);
+  font-weight: 650;
+  color: var(--accent);
+  background: var(--notice);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+}
+.sidebar-signin span {
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+.auth-continue {
+  display: grid;
+  gap: 0.2rem;
+  margin: 1.25rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  text-align: center;
+  font-family: var(--ui);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+/* The friendly prompt when a signed-out reader tries something that saves */
+.account-prompt {
+  width: min(26rem, calc(100vw - 32px));
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  padding: 1.25rem 1.25rem 1rem;
+  background: var(--paper-raised);
+  color: var(--ink);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.18);
+}
+.account-prompt::backdrop {
+  background: rgb(0 0 0 / 0.25);
+}
+.account-prompt h2,
+.account-needed h2 {
+  font-family: var(--ui);
+  font-size: 1.05rem;
+  font-weight: 650;
+  margin: 0 0 0.5rem;
+}
+.account-prompt p,
+.account-needed p {
+  color: var(--ink-soft);
+  margin: 0 0 1rem;
+}
+.account-prompt-actions {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: center;
+}
+
+/* In place of a page or panel section that needs an account */
+.account-needed {
+  max-width: 26rem;
+  margin: 3rem auto 0;
+  padding: 1.5rem 1.25rem;
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  background: var(--paper-raised);
+}
+.account-needed.compact {
+  margin: 1rem 0;
+  padding: 1rem;
+}
+.account-needed-page {
+  padding: 0 16px 2rem;
+}
+.account-needed-read {
+  text-align: center;
+  margin-top: 1rem;
+  font-family: var(--ui);
+}

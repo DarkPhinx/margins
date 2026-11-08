@@ -15,10 +15,12 @@
     "pretest": "npm run data",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "supabase:setup": "tsx scripts/supabase-setup.ts"
   },
   "dependencies": {
     "@fontsource-variable/literata": "^5.3.0",
+    "@supabase/supabase-js": "2.118.0",
     "@tiptap/pm": "^3.33.0",
     "@tiptap/react": "^3.33.0",
     "@tiptap/starter-kit": "^3.33.0",

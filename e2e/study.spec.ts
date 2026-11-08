@@ -1,11 +1,11 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 
 async function fresh(page: Page, path: string) {
   await page.goto('/');
   await page.evaluate(async () => {
     localStorage.clear();
     await new Promise<void>((resolve) => {
-      const req = indexedDB.deleteDatabase('margins');
+      const req = indexedDB.deleteDatabase('margins-e2e-user');
       req.onsuccess = req.onerror = req.onblocked = () => resolve();
     });
   });

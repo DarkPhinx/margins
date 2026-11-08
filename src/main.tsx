@@ -8,6 +8,7 @@ import './home/home.css';
 import './shell/shell.css';
 import './xrefs/xrefs.css';
 import './words/words.css';
+import './sync/sync.css';
 import { App } from './App';
 import { setOfflineState } from './offline';
 

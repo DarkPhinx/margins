@@ -35,6 +35,10 @@ interface BaseItem {
   anchors: VerseRange[];
   /** Derived from anchors (BBCCC per chapter) so a chapter's items load fast. */
   chapterKeys: number[];
+  /** Sync (this device only, never uploaded): the server version this copy is based on; absent if never synced. */
+  syncedVersion?: number;
+  /** Sync (this device only): 1 if changed here since it was last synced. Set automatically on every write. */
+  dirty?: 0 | 1;
 }
 
 interface WrittenItem {

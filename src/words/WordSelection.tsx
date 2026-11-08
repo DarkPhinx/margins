@@ -13,6 +13,7 @@ import { popupPosition } from '../study/SelectionBar';
 import { useStudy } from '../study/StudyContext';
 import { setSegmentHighlight } from '../study/store';
 import { useVerseActions } from '../study/VerseActions';
+import { useNeedAccount, useReadingOnly } from '../sync/access';
 import { preloadEditor } from '../study/ItemView';
 import { formatRange } from '../bible/refParser';
 import { HIGHLIGHT_COLORS, type HighlightColor } from '../study/types';
@@ -99,6 +100,8 @@ export function WordSelection({ translation }: { translation: TranslationId }) {
   const navigate = useNavigate();
   const { setSelection } = useStudy();
   const actions = useVerseActions();
+  const readingOnly = useReadingOnly();
+  const needAccount = useNeedAccount();
   const [picked, setPicked] = useState<Picked | null>(null);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -113,7 +116,7 @@ export function WordSelection({ translation }: { translation: TranslationId }) {
         // Selecting words replaces any verse selection, so one pop-up shows at a time.
         if (p) setSelection(null);
         // Have the editor ready in case Note or Question is tapped.
-        if (p) preloadEditor();
+        if (p && !readingOnly) preloadEditor();
       }, 180);
     };
     document.addEventListener('selectionchange', onChange);
@@ -121,7 +124,7 @@ export function WordSelection({ translation }: { translation: TranslationId }) {
       document.removeEventListener('selectionchange', onChange);
       window.clearTimeout(timer);
     };
-  }, [setSelection]);
+  }, [setSelection, readingOnly]);
 
   useEffect(() => {
     if (!picked || !ref.current) {
@@ -157,6 +160,8 @@ export function WordSelection({ translation }: { translation: TranslationId }) {
 
   /** Colours just the selected words (in this translation), or clears colour from them. */
   const highlight = async (color: HighlightColor | null) => {
+    // Highlights are saved, so they need an account.
+    if (needAccount('highlights')) return;
     // Close first, so a selection made while it saves isn't cleared.
     close();
     await setSegmentHighlight(translation, picked.range, picked.start, picked.end, color);

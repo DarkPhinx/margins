@@ -3,6 +3,7 @@ import { useOfflineState } from '../offline';
 import { listProviders } from '../translations/registry';
 import { XREF_CREDIT } from '../xrefs/xrefs';
 import { WORDS_CREDIT } from '../words/data';
+import { AccountSection } from '../sync/SyncStatus';
 import { updateSettings, useSettings } from '../settings';
 
 function Toggle({ label, hint, checked, onChange }: { label: string; hint: string; checked: boolean; onChange: (v: boolean) => void }) {
@@ -73,6 +74,7 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
               ? 'Saving the Bibles for offline reading…'
               : 'Offline reading isn’t available in this browser.'}
         </p>
+        <AccountSection />
         <section className="about">
           <h3 className="sheet-section">Sources</h3>
           {listProviders().map((p) => (

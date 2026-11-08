@@ -3,7 +3,7 @@
  * is simulated so the old chapters are still on the page while the new one
  * loads, and the reader keeps scrolling through that moment.
  */
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { BOOKS } from '../src/bible/books';
 import { scrollToChapter } from './scroll-helpers';
 

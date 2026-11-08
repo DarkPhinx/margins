@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 test('both Bibles work fully offline after the first visit', async ({ page, context }) => {
   await page.goto('/bsb/JHN/3');

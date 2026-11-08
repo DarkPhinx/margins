@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 
 /** Selects text as a drag would: from `from` in one verse to `to` in another (or the same). */
 async function selectText(page: Page, from: { verse: number; word: string }, to = from) {

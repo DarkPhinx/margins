@@ -8,6 +8,7 @@ import { AnchorLink, formatDay, ItemCard, JournalRow, KIND_LABEL, LinkCard } fro
 import { ItemView, preloadEditor } from './ItemView';
 import { XrefView } from '../xrefs/XrefView';
 import { InStudyPanel } from './RefLink';
+import { AccountNeeded, useReadingOnly } from '../sync/access';
 import { PassageView } from './PassageView';
 import { byStart, chapterRange, overlaps } from './ranges';
 import { useStudy, type StudyTab } from './StudyContext';
@@ -283,9 +284,11 @@ function UndoBar() {
 /** The study panel: beside the text on wide screens, a sheet under it on phones. */
 export function StudyPanel() {
   const { panelOpen, setPanelOpen, tab, setTab, views } = useStudy();
+  // Signed out: cross-references and previews work; the tabs (your own writing) explain accounts.
+  const readingOnly = useReadingOnly();
   useEffect(() => {
-    if (panelOpen) void preloadEditor();
-  }, [panelOpen]);
+    if (panelOpen && !readingOnly) void preloadEditor();
+  }, [panelOpen, readingOnly]);
   if (!panelOpen) return null;
   const top = views[views.length - 1];
   return (
@@ -317,6 +320,8 @@ export function StudyPanel() {
           <PassageView key={`${top.range.start}-${top.range.end}`} range={top.range} />
         ) : top?.type === 'xrefs' ? (
           <XrefView key={`${top.range.start}-${top.range.end}`} range={top.range} />
+        ) : readingOnly ? (
+          <AccountNeeded title="Your notes, questions and journal" compact />
         ) : tab === 'chapter' ? (
           <ChapterTab />
         ) : tab === 'questions' ? (

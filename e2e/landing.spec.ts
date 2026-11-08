@@ -2,7 +2,7 @@
  * Picking a chapter must land exactly on it: its heading (or verse) right
  * under the top bar, and it must stay there while the chapters around it load.
  */
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 
 async function jump(page: Page, book: string, chapter: number, verse?: number) {
   await page.locator('.place-btn').click();

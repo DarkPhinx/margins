@@ -6,6 +6,7 @@ import { loadPassage } from '../study/passage';
 import { rangeLabel } from '../study/ranges';
 import { useStudy } from '../study/StudyContext';
 import { deleteItem, linksFor } from '../study/store';
+import { useNeedAccount } from '../sync/access';
 import { crossReferences, XREF_CREDIT, XREF_TOP, type CrossReference } from './xrefs';
 
 /** Short text of a passage for a list row. */
@@ -44,6 +45,7 @@ export function XrefView({ range }: { range: VerseRange }) {
   const [failed, setFailed] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [linking, setLinking] = useState(false);
+  const needAccount = useNeedAccount();
   const links = useLiveQuery(() => linksFor(range), [range.start, range.end]) ?? [];
   const key = `${range.start}-${range.end}`;
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
@@ -88,7 +90,14 @@ export function XrefView({ range }: { range: VerseRange }) {
       <section aria-label="Your links">
         <div className="xref-section-head">
           <h4 className="panel-section">Your links</h4>
-          <button type="button" className="link-btn" onClick={() => setLinking(true)}>
+          <button
+            type="button"
+            className="link-btn"
+            onClick={() => {
+              // Links are saved, so they need an account.
+              if (!needAccount('passage links')) setLinking(true);
+            }}
+          >
             Link to another passage…
           </button>
         </div>

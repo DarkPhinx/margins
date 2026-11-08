@@ -4,15 +4,19 @@ import { SettingsContext, SettingsHost } from '../reader/ReaderBar';
 import { NoteDialog } from '../study/NoteDialog';
 import { MenuContext } from './menu';
 import { NAV_ITEMS } from './navItems';
+import { SyncStatus } from '../sync/SyncStatus';
+import { useReadingOnly, useSignIn } from '../sync/access';
 
 function Sidebar({ onNavigate }: { onNavigate: () => void }) {
   const { pathname } = useLocation();
   const { setOpen: openSettings } = useContext(SettingsContext);
+  const readingOnly = useReadingOnly();
+  const signIn = useSignIn();
   return (
     <nav className="sidebar" aria-label="Main">
       <div className="sidebar-brand">Margins</div>
       <ul className="sidebar-items">
-        {NAV_ITEMS.map((item) => {
+        {NAV_ITEMS.filter((item) => !readingOnly || item.signedOut).map((item) => {
           const active = item.isActive(pathname);
           return (
             <li key={item.id}>
@@ -30,6 +34,20 @@ function Sidebar({ onNavigate }: { onNavigate: () => void }) {
         })}
       </ul>
       <div className="sidebar-foot">
+        <SyncStatus />
+        {readingOnly && (
+          <button
+            type="button"
+            className="sidebar-signin"
+            onClick={() => {
+              onNavigate();
+              signIn();
+            }}
+          >
+            Sign in
+            <span>to save and sync your study</span>
+          </button>
+        )}
         <button
           type="button"
           className="sidebar-link"

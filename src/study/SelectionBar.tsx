@@ -6,6 +6,7 @@ import { formatRange } from '../bible/refParser';
 import { useStudy } from './StudyContext';
 import { setHighlight } from './store';
 import { useVerseActions } from './VerseActions';
+import { useNeedAccount, useReadingOnly } from '../sync/access';
 import { HIGHLIGHT_COLORS } from './types';
 import { preloadEditor } from './ItemView';
 
@@ -68,11 +69,13 @@ export function SelectionBar() {
     };
   }, [selection]);
   const actions = useVerseActions();
+  const readingOnly = useReadingOnly();
+  const needAccount = useNeedAccount();
 
   // Fetch the editor as soon as verses are selected, so it's ready when Note is tapped.
   useEffect(() => {
-    if (selection) preloadEditor();
-  }, [selection]);
+    if (selection && !readingOnly) preloadEditor();
+  }, [selection, readingOnly]);
 
   useEffect(() => {
     if (!selection) return;
@@ -105,6 +108,8 @@ export function SelectionBar() {
             className={`swatch-btn hl-${c}`}
             aria-label={`Highlight ${c}`}
             onClick={async () => {
+              // Highlights are saved, so they need an account.
+              if (needAccount('highlights')) return;
               await setHighlight(selection, c);
               setSelection(null);
             }}
@@ -115,6 +120,7 @@ export function SelectionBar() {
           className="swatch-btn swatch-none"
           aria-label="Remove highlight"
           onClick={async () => {
+            if (needAccount('highlights')) return;
             await setHighlight(selection, null);
             setSelection(null);
           }}

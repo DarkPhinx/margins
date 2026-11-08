@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { recoverDrafts } from './drafts';
+import { useReadingOnly } from '../sync/access';
 import type { BookId } from '../bible/books';
 import type { TranslationId, VerseId, VerseRange } from '../bible/types';
 import { sameBook } from './ranges';
@@ -110,10 +111,12 @@ export function nextSelection(current: VerseRange | null, id: VerseId): VerseRan
 }
 
 export function StudyProvider({ children }: { children: ReactNode }) {
-  // Words typed just before the page last closed are put back first.
+  // Words typed just before the page last closed are put back first (into your account's
+  // notes; signed out there's nothing to put them in, so they're kept for later).
+  const readingOnly = useReadingOnly();
   useEffect(() => {
-    void recoverDrafts();
-  }, []);
+    if (!readingOnly) void recoverDrafts();
+  }, [readingOnly]);
   const [panel, setPanel] = useState(loadPanel);
   const [views, setViews] = useState<StudyView[]>([]);
   const [selection, setSelection] = useState<VerseRange | null>(null);

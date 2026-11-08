@@ -15,6 +15,8 @@ export interface NavItem {
   to: () => string;
   /** Whether the current page belongs to this item. */
   isActive: (pathname: string) => boolean;
+  /** Shown to someone not signed in. (Home is about your own study, so it opens the Bible instead.) */
+  signedOut?: boolean;
 }
 
 const icon = (d: string) => (
@@ -43,6 +45,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
       return readerPath(translation, last.book, last.chapter, last.verse);
     },
     isActive: (p) => READER_PATH.test(p),
+    signedOut: true,
   },
   {
     id: 'journal',
@@ -50,6 +53,8 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: icon('M7 3.5h11v17H7zM7 3.5H5.5v17H7M10 8h5M10 11.5h5'),
     to: () => '/journal',
     isActive: (p) => p === '/journal' || p.startsWith('/journal/'),
+    // Signed out, it explains what an account adds.
+    signedOut: true,
   },
   {
     id: 'notes',
@@ -57,6 +62,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: icon('M6 3.5h9l3 3V20.5H6zM9 9h6M9 12.5h6M9 16h4'),
     to: () => '/notes',
     isActive: (p) => p === '/notes' || p.startsWith('/notes/'),
+    signedOut: true,
   },
   {
     id: 'original',
@@ -68,5 +74,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
     ),
     to: () => '/original',
     isActive: (p) => p === '/original' || p.startsWith('/original/'),
+    signedOut: true,
   },
 ];

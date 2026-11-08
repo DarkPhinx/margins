@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Page } from './fixtures';
 import { BOOKS } from '../src/bible/books';
 
 /** "1 Corinthians 7" or "Psalm 119" → a number that sorts in Bible order. */
