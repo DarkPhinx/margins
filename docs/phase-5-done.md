@@ -17,8 +17,8 @@ Decisions (Nov 2026): sign in with email and password, or Google; two levels —
 3. Google (optional): create an OAuth client ("Web application") in Google Cloud with the redirect URI `https://<project-ref>.supabase.co/auth/v1/callback`; put `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env`; run `npm run supabase:setup` again. The Google button appears on the sign-in page only once it's switched on.
 4. Before a public launch: set up your own email sender (SMTP) in Supabase — the built-in one sends only a few emails an hour — and set `SITE_URL` to the real address.
 
-- [ ] Steps 1–2 done; `npm run supabase:setup` prints "Applied 0001_study_items.sql".
-- [ ] Google sign-in switched on (optional).
+- [x] Steps 1–2 done; `npm run supabase:setup` prints "Applied 0001_study_items.sql".
+- [x] Google sign-in switched on (optional).
 
 ## 1. Accounts
 
@@ -56,7 +56,7 @@ Decisions (Nov 2026): sign in with email and password, or Google; two levels —
 
 ## 4. Two real devices
 
-- [ ] `e2e/sync.spec.ts` against the real project (runs when `SUPABASE_ACCESS_TOKEN` is set; makes and then deletes a throwaway account): a note written offline on one device appears on the other; editing it on both while offline asks on the second, and "Keep both" leaves both notes on both devices.
+- [x] `e2e/sync.spec.ts` against the real project (runs when `SUPABASE_ACCESS_TOKEN` is set; makes and then deletes a throwaway account): a note written offline on one device appears on the other; editing it on both while offline asks on the second, and "Keep both" leaves both notes on both devices.
 
 ## 5. Other browser tests
 

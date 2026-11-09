@@ -32,6 +32,8 @@ vi.mock('../src/sync/supabase', () => {
     isConfigured: () => true,
     supabase: () => ({ auth, channel: () => channel, removeChannel: async () => undefined }),
     supabaseRemote: () => ({ push: async () => ({ status: 'ok', version: 1, seq: 1 }), pull: async () => [] }),
+    // The account's settings: whatever the device sends, back.
+    supabaseSettingsRemote: () => ({ exchange: async (changes: object) => changes }),
   };
 });
 
@@ -90,6 +92,23 @@ describe('without an account: reading and looking things up', () => {
     await user.click(redLetters);
     expect(getSettings().redLetters).toBe(!before);
     expect(JSON.parse(localStorage.getItem('margins.settings.v1')!).redLetters).toBe(!before);
+  });
+
+  it('Settings shows reading settings (kept here until signing in) and this device’s, with dark mode and text size', async () => {
+    const user = userEvent.setup();
+    renderApp('/bsb/JHN/3');
+    await screen.findByText('Jesus and Nicodemus');
+    await user.click(screen.getByRole('button', { name: 'Settings' }));
+    const settings = await screen.findByRole('dialog', { name: 'Settings' });
+    const reading = within(settings).getByRole('region', { name: 'Reading' });
+    expect(reading).toHaveTextContent('Sign in to keep them the same on every device.');
+    expect(within(reading).getByRole('switch', { name: /Red letters/ })).toBeInTheDocument();
+    const device = within(settings).getByRole('region', { name: 'This device' });
+    expect(within(device).queryByRole('switch')).toBeNull();
+    await user.click(within(device).getByRole('radio', { name: 'Dark' }));
+    await user.click(within(device).getByRole('radio', { name: 'Large' }));
+    expect(getSettings()).toMatchObject({ theme: 'dark', textSize: 'large' });
+    expect(JSON.parse(localStorage.getItem('margins.settings.v1')!)).toMatchObject({ theme: 'dark', textSize: 'large' });
   });
 
   it('cross-references open from a verse, with "Show all"', async () => {

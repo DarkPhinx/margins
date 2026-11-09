@@ -7,6 +7,7 @@ import { loadPassage, type PassageVerse } from './passage';
 import { AnchorLink, KIND_LABEL } from './ItemCard';
 import { useStudy } from './StudyContext';
 import { useNavigate } from 'react-router-dom';
+import { doneTyping, typing } from '../sync/writing';
 import { parseVerseId } from '../bible/verseId';
 import { Picker } from '../reader/Picker';
 import { readerPath } from '../reader/nav';
@@ -43,10 +44,14 @@ const SAVE_DELAY_MS = 400;
  * Saves after a short pause in typing, and always on leaving. Each change is
  * also kept as a draft at once, so nothing is lost if the page closes mid-save.
  * With `merge`, changes to different fields (a journal's date and title) add up.
+ * Saving here is on the device only; uploading waits for a longer pause or for
+ * the note to close (see sync/writing).
  */
 function useDebouncedSave<T>(id: string, field: DraftField, save: (value: T) => Promise<void>, merge = false) {
   const pending = useRef<{ value: T } | null>(null);
   const timer = useRef<number | undefined>(undefined);
+  // Saves run one after another; flush waits for any still running.
+  const saving = useRef<Promise<void>>(Promise.resolve());
   const [state, setState] = useState<'saved' | 'saving'>('saved');
   const saveRef = useRef(save);
   useEffect(() => {
@@ -57,14 +62,18 @@ function useDebouncedSave<T>(id: string, field: DraftField, save: (value: T) => 
     window.clearTimeout(timer.current);
     const p = pending.current;
     pending.current = null;
-    if (!p) return Promise.resolve();
-    return saveRef.current(p.value).then(() => {
-      // Only drop the draft if nothing newer arrived while saving.
-      if (!pending.current) {
-        clearDraft(id, field);
-        setState('saved');
-      }
-    });
+    if (!p) return saving.current;
+    const run = saving.current
+      .then(() => saveRef.current(p.value))
+      .then(() => {
+        // Only drop the draft if nothing newer arrived while saving.
+        if (!pending.current) {
+          clearDraft(id, field);
+          setState('saved');
+        }
+      });
+    saving.current = run.catch(() => undefined);
+    return run;
   }, [id, field]);
 
   const queue = useCallback(
@@ -72,6 +81,7 @@ function useDebouncedSave<T>(id: string, field: DraftField, save: (value: T) => 
       const next = merge && pending.current ? ({ ...pending.current.value, ...value } as T) : value;
       pending.current = { value: next };
       writeDraft(id, field, next);
+      typing(id);
       setState('saving');
       window.clearTimeout(timer.current);
       timer.current = window.setTimeout(() => void flush(), SAVE_DELAY_MS);
@@ -117,15 +127,36 @@ export function ItemView({ id, isNew, layout = 'panel', onClose, closeRef }: Ite
   const meta = useDebouncedSave<{ date?: string; title?: string }>(id, 'meta', (patch) => saveJournalMeta(id, patch), true);
   const [title, setTitle] = useState<string | null>(null);
 
+  /** Save everything on the device, then let it upload. */
+  const { flush: flushBody } = body;
+  const { flush: flushAnswer } = answer;
+  const { flush: flushMeta } = meta;
+  const saveAll = useCallback(
+    () => Promise.all([flushBody(), flushAnswer(), flushMeta()]).then(() => undefined),
+    [flushBody, flushAnswer, flushMeta],
+  );
+  const saveAndUpload = useCallback(() => saveAll().finally(() => doneTyping(id)), [saveAll, id]);
+
+  // Leaving the note (closed, or the app hidden) uploads it straight away.
+  useEffect(() => {
+    const onVisibility = () => document.visibilityState === 'hidden' && void saveAndUpload();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      void saveAndUpload();
+    };
+  }, [saveAndUpload]);
+
   /** Save everything, drop a new item left empty, then close. */
   const back = async () => {
-    await Promise.all([body.flush(), answer.flush(), meta.flush()]);
+    await saveAll();
     if (isNew) await discardIfEmpty(id);
+    doneTyping(id);
     close();
   };
   /** A reference clicked in the editor: save, then go to that verse in the reader. */
   const followReference = async (range: VerseRange, chapterOnly: boolean) => {
-    await Promise.all([body.flush(), answer.flush(), meta.flush()]);
+    await saveAndUpload();
     // The pop-up sits over the reader, so it closes; the panel and journal page stay as they are.
     if (layout === 'dialog') close();
     const { book, chapter, verse } = parseVerseId(range.start);

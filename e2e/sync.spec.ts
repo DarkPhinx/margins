@@ -52,7 +52,8 @@ test.afterAll(async () => {
 async function device(browser: Browser): Promise<{ context: BrowserContext; page: Page }> {
   const context = await browser.newContext({ baseURL: 'http://localhost:4173' });
   const page = await context.newPage();
-  await page.goto('/');
+  // Reading needs no account, so / opens the Bible; sign in from the sign-in page.
+  await page.goto('/signin');
   await page.getByLabel('Email').fill(account.email);
   await page.getByLabel('Password').fill(account.password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();

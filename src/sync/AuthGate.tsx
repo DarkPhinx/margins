@@ -12,7 +12,8 @@ import { openAccountDatabase, removeAccountDatabase } from './localData';
 import { SetPasswordPage } from './SignInPage';
 import { ReadingOnlyProvider } from './access';
 import { setReadOnly, switchDatabase } from '../study/db';
-import { AUTH_STORAGE_KEY, isConfigured, supabase, supabaseRemote } from './supabase';
+import { AUTH_STORAGE_KEY, isConfigured, supabase, supabaseRemote, supabaseSettingsRemote } from './supabase';
+import { attachAccountSettings, detachAccountSettings, forgetAccountSettings } from '../settings';
 import { SyncProvider } from './SyncContext';
 
 export interface AccountUser {
@@ -111,6 +112,9 @@ function Gatekeeper({ children }: { children: ReactNode }) {
   const signedOut = gate.kind === 'out';
   useEffect(() => {
     if (!userId && !signedOut) return;
+    // Account settings come from the account; signed out, from this device.
+    if (userId) attachAccountSettings(userId);
+    else detachAccountSettings();
     let alive = true;
     // Signed out: an empty database nothing is ever written to, so no one's notes show.
     void (userId ? openAccountDatabase(userId) : switchDatabase(GUEST_DATABASE)).then(() => {
@@ -136,15 +140,18 @@ function Gatekeeper({ children }: { children: ReactNode }) {
       }
     }
     await removeAccountDatabase(userId);
+    forgetAccountSettings(userId);
   }, [sb, userId]);
 
   const remote = useMemo(() => supabaseRemote(sb), [sb]);
+  const settingsRemote = useMemo(() => supabaseSettingsRemote(sb), [sb]);
   const subscribe = useCallback(
     (onChange: () => void) => {
       if (!userId) return () => undefined;
       const channel = sb
         .channel(`study-items-${userId}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'study_items', filter: `user_id=eq.${userId}` }, onChange)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'account_settings', filter: `user_id=eq.${userId}` }, onChange)
         .subscribe();
       return () => {
         void sb.removeChannel(channel);
@@ -165,7 +172,7 @@ function Gatekeeper({ children }: { children: ReactNode }) {
   if (openFor !== gate.user.id || !account) return <Splash />;
   return (
     <AccountContext.Provider value={account}>
-      <SyncProvider remote={remote} subscribe={subscribe}>
+      <SyncProvider remote={remote} settings={settingsRemote} subscribe={subscribe}>
         {children}
       </SyncProvider>
     </AccountContext.Provider>

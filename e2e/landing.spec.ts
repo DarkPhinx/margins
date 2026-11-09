@@ -2,7 +2,7 @@
  * Picking a chapter must land exactly on it: its heading (or verse) right
  * under the top bar, and it must stay there while the chapters around it load.
  */
-import { expect, test, type Page } from './fixtures';
+import { expect, setContinuous, test, type Page } from './fixtures';
 
 async function jump(page: Page, book: string, chapter: number, verse?: number) {
   await page.locator('.place-btn').click();
@@ -39,8 +39,7 @@ for (const continuous of [true, false]) {
   for (const start of ['/bsb/PSA/150', '/bsb/JHN/3', '/kjv/PRO/31']) {
     test(`${continuous ? 'continuous' : 'paged'}: picker lands exactly, starting from ${start}`, async ({ page }) => {
       test.setTimeout(120_000);
-      await page.goto('/');
-      await page.evaluate((c) => localStorage.setItem('margins.settings.v1', JSON.stringify({ continuousScroll: c })), continuous);
+      await setContinuous(page, continuous);
       await page.goto(start);
       await page.mouse.move(400, 400);
       await page.mouse.wheel(0, 1500);

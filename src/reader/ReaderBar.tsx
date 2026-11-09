@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { BookId } from '../bible/books';
 import type { TranslationId } from '../bible/types';
 import { getProvider, listProviders } from '../translations/registry';
+import { updateSettings } from '../settings';
 import { Picker } from './Picker';
 import { useStudy } from '../study/StudyContext';
 import { MenuButton } from '../shell/menu';
@@ -90,7 +91,11 @@ export function ReaderBar({ translation, book, chapter, currentVerse }: ReaderBa
               id="translation"
               className="translation-select"
               value={translation}
-              onChange={(e) => navigate(readerPath(e.target.value, book, chapter, currentVerse()))}
+              onChange={(e) => {
+                // Choosing a translation is the setting; following a link to one isn't.
+                updateSettings({ translation: e.target.value as TranslationId });
+                navigate(readerPath(e.target.value, book, chapter, currentVerse()));
+              }}
             >
               {listProviders().map((p) => (
                 <option key={p.meta.id} value={p.meta.id}>

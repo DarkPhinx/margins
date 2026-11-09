@@ -3,7 +3,7 @@
  * is simulated so the old chapters are still on the page while the new one
  * loads, and the reader keeps scrolling through that moment.
  */
-import { expect, test, type Page } from './fixtures';
+import { expect, setContinuous, test, type Page } from './fixtures';
 import { BOOKS } from '../src/bible/books';
 import { scrollToChapter } from './scroll-helpers';
 
@@ -66,10 +66,7 @@ async function jumpWhileScrolling(page: Page, bookName: string, chapter: number)
   }
 }
 
-async function enableContinuous(page: Page) {
-  await page.goto('/');
-  await page.evaluate(() => localStorage.setItem('margins.settings.v1', JSON.stringify({ continuousScroll: true })));
-}
+const enableContinuous = (page: Page) => setContinuous(page, true);
 
 test('1 Corinthians 2 → Genesis 50: scrolling up shows Genesis 49, down shows Exodus 1', async ({ page }) => {
   test.setTimeout(120_000);

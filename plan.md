@@ -113,7 +113,17 @@ Phase 6 — Windows App
 Goal: a real desktop program.
 • Package the web app with Electron: installer, desktop icon, own window.
 • Bundled BSB and KJV; full offline use.
-Done when: the installer works on a clean Windows machine and matches the web app.
+• Built (Nov 2026): Electron 45 and electron-builder. The program is the web app built from the same code (`vite build --mode desktop`), served from its own address, margins://app, out of the files inside it: both Bibles, cross-references and all the word data, so it works fully offline from the first launch and needs no service worker. Its own window (size and place remembered), one copy at a time, no menu bar but the usual keys, a right-click menu with spelling. Outside links and Google sign-in open in the person's browser; margins://app is registered with Windows, so sign-in emails and Google come back into the program. An NSIS installer for the current user (choose the folder; desktop and Start menu shortcuts); uninstalling keeps the person's notes. Not yet code-signed. `npm run dist:win` builds it; `npm run test:installer` installs, tests and uninstalls it.
+Done when: the installer works on a clean Windows machine and matches the web app. Checklist: docs/phase-6-done.md.
+Settings (built Nov 2026, between Phases 6 and 7)
+Goal: settings that follow the person where they should, and stay on the device where they should.
+• Two scopes. Account settings are about how the person studies: they're kept with the account and synced, so they match on every device. Device settings are about the screen and this device: they're always kept on the device only.
+• Account: translation, red letters, manuscript notes, continuous reading. Device: dark mode (System, Light or Dark), text size (Small, Medium, Large, Larger; scales the whole app), window size (desktop app) and last reading position.
+• One central list (src/settings/registry.ts): every setting declares its scope ("account" or "device"), its default and how to check a stored value. Adding a setting means adding it there; storage and sync follow its scope with no other changes, and the Settings panel puts its control under Reading (account) or This device to match.
+• Signed out, everything is kept on the device. Signed in, account settings come from the account: the account's values replace this device's, and settings the account has never had are filled from this device. Signing out goes back to the device's own values and removes the account's copy. The translation is recorded when the person chooses one in the reader, not when a link opens a passage in another.
+• Sync: one row per account (supabase/migrations/0002_account_settings.sql), each setting stored with its change time. A device sends only what it changed; per setting, the later change wins, so different settings changed on two devices both survive. Synced with the items (on opening, a moment after a change, on reconnecting, by Realtime, every minute); works offline and catches up later. Settings not yet synced count as unsynced changes when signing out.
+• Window size is kept by the desktop program itself (window.json), since the window is sized before the page loads; the list and the program share its definition (electron/window-state.ts). The window's background follows Windows' dark setting until the page draws.
+• Tests: tests/settings.test.ts (the list, both scopes, signing in and out, offline, two devices, newer-version settings kept); the Settings panel in tests/reading-signed-out.test.tsx.
 Phase 7 — The Block System
 Goal: the building blocks every template is made from.
 Block types (each configurable):

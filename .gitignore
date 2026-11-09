@@ -160,3 +160,8 @@ vite.config.ts.timestamp-*
 # Large pinned sources, downloaded by npm run data (see data/sources/SOURCES.json)
 /data/cache/
 /public/words/
+
+# Windows app (npm run build:desktop, npm run dist:win)
+/dist-desktop/
+/dist-electron/
+/release/

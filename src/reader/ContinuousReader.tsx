@@ -325,7 +325,7 @@ export function ContinuousReader({ translation, book, chapter, verse, resumeVers
       const path = readerPath(translation, pos.book, pos.chapter, pos.verse);
       ownPath.current = path;
       navigate(path, { replace: true });
-      updateSettings({ translation, last: pos });
+      updateSettings({ last: pos });
     }, 300);
   }, [current, translation, navigate]);
   useEffect(

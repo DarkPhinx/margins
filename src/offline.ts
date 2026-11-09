@@ -2,7 +2,11 @@ import { useSyncExternalStore } from 'react';
 
 type OfflineState = 'unsupported' | 'preparing' | 'ready';
 
-let state: OfflineState = typeof navigator !== 'undefined' && 'serviceWorker' in navigator ? 'preparing' : 'unsupported';
+let state: OfflineState = __DESKTOP__
+  ? 'ready' // The Windows app carries the Bibles inside it.
+  : typeof navigator !== 'undefined' && 'serviceWorker' in navigator
+    ? 'preparing'
+    : 'unsupported';
 const listeners = new Set<() => void>();
 
 export function setOfflineState(next: OfflineState): void {

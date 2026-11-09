@@ -12,11 +12,16 @@
  *    (this device's, the other's, or both); until then the item isn't pushed;
  *  - highlights and links (no writing to lose): the newer change wins.
  * Identical copies are never a conflict.
+ *
+ * Half-written notes stay on the device: an item being typed in is uploaded
+ * once typing pauses or the note closes (see ./writing), and a new note,
+ * question or journal entry isn't uploaded until something is written in it.
  */
 
 import { db, syncWrite, type SyncConflict } from '../study/db';
 import type { StudyItem } from '../study/types';
 import { isTextItem } from '../study/types';
+import { isTyping } from './writing';
 
 /** A server copy of an item. */
 export interface RemoteRow {
@@ -116,11 +121,25 @@ async function pull(remote: Remote, report: SyncReport): Promise<void> {
   }
 }
 
+/** A new note, question or journal entry nothing has been written in yet. */
+export function blankAndNew(item: StudyItem): boolean {
+  if (item.syncedVersion !== undefined || item.deletedAt !== null || !isTextItem(item)) return false;
+  if (item.text.trim()) return false;
+  if (item.kind === 'journal' && item.title.trim()) return false;
+  if (item.kind === 'question' && item.answerText.trim()) return false;
+  return true;
+}
+
+/** Not uploaded yet: still being typed in, or new and still blank. */
+function notReady(item: StudyItem): boolean {
+  return isTyping(item.id) || blankAndNew(item);
+}
+
 async function push(remote: Remote, report: SyncReport): Promise<void> {
   const waiting = new Set((await db.conflicts.toArray()).map((c) => c.id));
   const dirty = await db.items.where('dirty').equals(1).toArray();
   for (const item of dirty) {
-    if (waiting.has(item.id)) continue;
+    if (waiting.has(item.id) || notReady(item)) continue;
     const result = await remote.push(forUpload(item), item.syncedVersion ?? null);
     if (result.status === 'ok') {
       // Mark it clean only if it wasn't changed again while uploading.

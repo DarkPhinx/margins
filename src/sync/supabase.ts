@@ -7,6 +7,7 @@
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { StudyItem } from '../study/types';
+import type { AccountRecord, SettingsRemote } from '../settings';
 import type { PushResult, Remote, RemoteRow } from './engine';
 
 /** Where the signed-in session is kept (localStorage), so the app opens offline too. */
@@ -50,6 +51,20 @@ export function supabaseRemote(sb: SupabaseClient = supabase()): Remote {
       const { data, error } = await sb.from('study_items').select('id, version, data, seq').gt('seq', since).order('seq').limit(limit);
       if (error) throw new Error(`Couldn't fetch changes: ${error.message}`);
       return (data as RemoteRow[]).map((r) => ({ ...r, seq: Number(r.seq) }));
+    },
+  };
+}
+
+/** The account's settings (scope "account" in src/settings/registry.ts): merged on the server, newer change wins per setting. */
+export function supabaseSettingsRemote(sb: SupabaseClient = supabase()): SettingsRemote {
+  return {
+    async exchange(changes): Promise<AccountRecord> {
+      const { data, error } = await sb.rpc('merge_account_settings', { p_changes: changes });
+      // PGRST202/PGRST205: the server hasn't had supabase/migrations/0002 yet.
+      if (error?.code === 'PGRST202' || error?.code === 'PGRST205')
+        throw new Error('Settings sync isn’t set up on the server yet (run npm run supabase:setup). Notes and highlights still sync.');
+      if (error) throw new Error(`Couldn't sync settings: ${error.message}`);
+      return (data ?? {}) as AccountRecord;
     },
   };
 }

@@ -2,13 +2,16 @@
  * Keeps this device in step with the account: syncs when the app opens, a
  * moment after any change, when the connection comes back, when the app comes
  * back into view, when another device changes something (Supabase Realtime),
- * and every minute as a fallback.
+ * when typing in a note pauses or the note closes, and every minute as a fallback.
+ * Account settings sync along with the items, and a moment after one changes.
  */
 
 import { useLiveQuery } from 'dexie-react-hooks';
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { onAccountSettingsChange, pendingAccountChangeCount, subscribeSettings, syncSettings, type SettingsRemote } from '../settings';
 import { db, type SyncConflict } from '../study/db';
 import { sync, type Remote } from './engine';
+import { onTypingDone } from './writing';
 
 export type SyncStatus = 'syncing' | 'synced' | 'offline' | 'error';
 
@@ -40,10 +43,13 @@ const looksOffline = (e: unknown) =>
 
 export function SyncProvider({
   remote,
+  settings,
   subscribe,
   children,
 }: {
   remote: Remote;
+  /** The account's settings; without it (e.g. tests of items alone) only items sync. */
+  settings?: SettingsRemote;
   /** Calls back when another device changes something; returns an unsubscribe. */
   subscribe?: (onChange: () => void) => () => void;
   children: ReactNode;
@@ -58,7 +64,8 @@ export function SyncProvider({
     const dirty = await db.items.where('dirty').equals(1).toArray();
     return { n: dirty.length, latest: Math.max(0, ...dirty.map((i) => i.updatedAt)) };
   }, []);
-  const unsynced = waiting?.n ?? 0;
+  const pendingSettings = useSyncExternalStore(subscribeSettings, pendingAccountChangeCount, pendingAccountChangeCount);
+  const unsynced = (waiting?.n ?? 0) + (settings ? pendingSettings : 0);
   const latestChange = waiting?.latest ?? 0;
 
   const syncNow = useCallback(async () => {
@@ -69,6 +76,7 @@ export function SyncProvider({
     setStatus('syncing');
     try {
       await sync(remote);
+      if (settings) await syncSettings(settings);
       setLastSynced(Date.now());
       setError(null);
       setStatus('synced');
@@ -79,9 +87,9 @@ export function SyncProvider({
         setStatus('error');
       }
     }
-  }, [remote]);
+  }, [remote, settings]);
 
-  // Open, back online, back in view, every minute, and on other devices' changes.
+  // Open, back online, back in view, every minute, on other devices' changes, and when typing stops.
   useEffect(() => {
     // First sync straight after opening (not inside the effect itself).
     const first = window.setTimeout(() => void syncNow(), 0);
@@ -94,7 +102,9 @@ export function SyncProvider({
     document.addEventListener('visibilitychange', onVisible);
     const timer = window.setInterval(() => void syncNow(), EVERY_MS);
     const unsubscribe = subscribe?.(() => void syncNow());
+    const stopTyping = onTypingDone(() => void syncNow());
     return () => {
+      stopTyping();
       window.removeEventListener('online', syncNow);
       window.removeEventListener('offline', onOffline);
       document.removeEventListener('visibilitychange', onVisible);
@@ -103,6 +113,20 @@ export function SyncProvider({
       unsubscribe?.();
     };
   }, [syncNow, subscribe]);
+
+  // A moment after an account setting changes here.
+  const settingsPending = useRef(0);
+  useEffect(() => {
+    if (!settings) return;
+    const stop = onAccountSettingsChange(() => {
+      window.clearTimeout(settingsPending.current);
+      settingsPending.current = window.setTimeout(() => void syncNow(), AFTER_CHANGE_MS);
+    });
+    return () => {
+      stop();
+      window.clearTimeout(settingsPending.current);
+    };
+  }, [settings, syncNow]);
 
   // A moment after anything changes here.
   const pending = useRef(0);

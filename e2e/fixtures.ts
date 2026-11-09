@@ -6,7 +6,7 @@
  * real accounts instead and imports from '@playwright/test' directly.
  */
 
-import { test as base } from '@playwright/test';
+import { expect, test as base, type Page } from '@playwright/test';
 
 export { expect, type Page, type BrowserContext, type Locator } from '@playwright/test';
 
@@ -49,3 +49,18 @@ export const test = base.extend<{ signedOut: boolean; signedIn: null }>({
     { auto: true },
   ],
 });
+
+/**
+ * Continuous reading on or off, from Settings as a person would. It's an
+ * account setting: signed in it comes from the account, so seeding the
+ * device's own storage wouldn't reach it.
+ */
+export async function setContinuous(page: Page, on: boolean): Promise<void> {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Settings' }).first().click();
+  const dialog = page.getByRole('dialog', { name: 'Settings' });
+  const toggle = dialog.getByRole('switch', { name: /Continuous reading/ });
+  if ((await toggle.isChecked()) !== on) await toggle.click();
+  await expect(toggle).toBeChecked({ checked: on });
+  await dialog.getByRole('button', { name: 'Done' }).click();
+}

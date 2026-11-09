@@ -14,8 +14,10 @@
   --panel-width: 380px;
   --sheet-height: 56vh;
 }
+/* Dark: when the device is dark and the person hasn't chosen Light, or when they chose Dark
+   (Settings → Dark mode, data-theme on <html>). The two blocks must stay the same. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --hl-yellow: #5a4d1c;
     --hl-green: #2f4a2a;
     --hl-blue: #253f57;
@@ -27,6 +29,18 @@
     --verse-hover: rgb(210 171 108 / 0.1);
     --verse-selected: rgb(210 171 108 / 0.16);
   }
+}
+:root[data-theme='dark'] {
+  --hl-yellow: #5a4d1c;
+  --hl-green: #2f4a2a;
+  --hl-blue: #253f57;
+  --hl-pink: #57303a;
+  --hl-purple: #3f3352;
+  --question: #b6a6ee;
+  --journal: #86c9a5;
+  --danger: #ef8a74;
+  --verse-hover: rgb(210 171 108 / 0.1);
+  --verse-selected: rgb(210 171 108 / 0.16);
 }
 
 .hl-yellow { background-color: var(--hl-yellow); }

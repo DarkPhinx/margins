@@ -1,11 +1,12 @@
 import 'fake-indexeddb/auto';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeVerseId } from '../src/bible/verseId';
 import { db, switchDatabase } from '../src/study/db';
-import { createNote, deleteItem, discardIfEmpty, itemsForChapter, saveBody, setHighlight, setSegmentHighlight } from '../src/study/store';
+import { createJournal, createNote, createQuestion, deleteItem, discardIfEmpty, itemsForChapter, saveBody, setHighlight, setSegmentHighlight } from '../src/study/store';
 import { docFromText } from '../src/study/text';
 import type { NoteItem, StudyItem } from '../src/study/types';
 import { forUpload, resolveConflict, sync, type PushResult, type Remote, type RemoteRow } from '../src/sync/engine';
+import { doneTyping, isTyping, onTypingDone, TYPING_PAUSE_MS, typing } from '../src/sync/writing';
 
 /** The server, following the same rules as push_item in supabase/migrations. */
 class FakeServer {
@@ -253,5 +254,95 @@ describe('syncing notes between two devices', () => {
     }
     expect((await syncOn(phone)).pulled).toBe(1203);
     expect(await db.items.count()).toBe(1203);
+  });
+});
+
+describe('half-written notes stay on the device', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('a note being typed in is uploaded only once typing pauses for about two seconds', async () => {
+    // Only the hold's timers are faked; the database keeps real time.
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const ready = vi.fn();
+    const stop = onTypingDone(ready);
+    await on(laptop);
+    const note = await createNote([jn316], docFromText('In the beginning'));
+    await sync(server.remote());
+
+    // Typing: each keystroke is saved here at once, but nothing goes up.
+    typing(note.id);
+    await saveBody(note.id, docFromText('In the beginning was the W'));
+    await sync(server.remote());
+    vi.advanceTimersByTime(TYPING_PAUSE_MS - 500);
+    typing(note.id);
+    await saveBody(note.id, docFromText('In the beginning was the Word'));
+    await sync(server.remote());
+    vi.advanceTimersByTime(TYPING_PAUSE_MS - 500);
+    expect(server.rows.get(note.id)?.data).toMatchObject({ text: 'In the beginning' });
+    expect((await db.items.get(note.id))?.dirty).toBe(1);
+    expect(ready).not.toHaveBeenCalled();
+
+    // A pause: the hold ends, sync is asked for, and the whole sentence goes up.
+    vi.advanceTimersByTime(500);
+    expect(isTyping(note.id)).toBe(false);
+    expect(ready).toHaveBeenCalledTimes(1);
+    await sync(server.remote());
+    expect(server.rows.get(note.id)?.data).toMatchObject({ text: 'In the beginning was the Word' });
+    expect((await db.items.get(note.id))?.dirty).toBe(0);
+    stop();
+  });
+
+  it('closing the note uploads it straight away', async () => {
+    const ready = vi.fn();
+    const stop = onTypingDone(ready);
+    await on(laptop);
+    const note = await createNote([jn316], docFromText('Grace'));
+    typing(note.id);
+    await sync(server.remote());
+    expect(server.rows.has(note.id)).toBe(false);
+
+    doneTyping(note.id);
+    expect(ready).toHaveBeenCalledTimes(1);
+    await sync(server.remote());
+    expect(server.rows.get(note.id)?.data).toMatchObject({ text: 'Grace' });
+    // Closing again (nothing held) doesn't ask for another sync.
+    doneTyping(note.id);
+    expect(ready).toHaveBeenCalledTimes(1);
+    stop();
+  });
+
+  it('a brand-new note, question or journal entry is not uploaded until it has some text', async () => {
+    await on(laptop);
+    const note = await createNote([jn316]);
+    const question = await createQuestion([jn316]);
+    const journal = await createJournal('2026-11-07');
+    await sync(server.remote());
+    expect(server.rows.size).toBe(0);
+    for (const item of [note, question, journal]) expect((await db.items.get(item.id))?.dirty).toBe(1);
+
+    // Left empty and closed: removed here, and never reached the account.
+    expect(await discardIfEmpty(question.id)).toBe(true);
+    await saveBody(note.id, docFromText('  '));
+    await sync(server.remote());
+    expect(server.rows.size).toBe(0);
+
+    // Some text (or a journal title) and it goes up.
+    await saveBody(note.id, docFromText('Light'));
+    await db.items.update(journal.id, { title: 'Morning' } as Partial<StudyItem>);
+    await sync(server.remote());
+    expect(server.rows.get(note.id)?.data).toMatchObject({ text: 'Light' });
+    expect(server.rows.get(journal.id)?.data).toMatchObject({ title: 'Morning' });
+    expect(server.rows.has(question.id)).toBe(false);
+  });
+
+  it('a note already in the account and emptied out still syncs', async () => {
+    await on(laptop);
+    const note = await createNote([jn316], docFromText('Draft'));
+    await sync(server.remote());
+    await saveBody(note.id, docFromText(''));
+    await sync(server.remote());
+    expect(server.rows.get(note.id)?.data).toMatchObject({ text: '' });
   });
 });

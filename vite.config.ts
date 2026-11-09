@@ -15,11 +15,17 @@ export default defineConfig(({ mode }) => {
     env,
   });
 
+  // The Windows app (Phase 6) is built from the same code: its files are all
+  // inside the program, so it needs no service worker.
+  const desktop = mode === 'desktop';
+
   return {
-    plugins: [react(), tailwindcss(), VitePWA(pwaOptions)],
+    plugins: [react(), tailwindcss(), VitePWA({ ...pwaOptions, disable: desktop })],
     define: {
       __ESV_ENABLED__: JSON.stringify(mode === 'test' ? false : esvEnabled),
+      __DESKTOP__: JSON.stringify(desktop),
     },
+    build: desktop ? { outDir: 'dist-desktop' } : {},
     test: {
       environment: 'jsdom',
       setupFiles: ['tests/setup.ts'],

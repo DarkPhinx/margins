@@ -81,14 +81,14 @@ export function PagedReader({ translation, book, chapter, verse }: ReaderProps) 
       }
       window.clearTimeout(saveTimer);
       saveTimer = window.setTimeout(
-        () => updateSettings({ translation, last: { book, chapter, verse: visibleVerse.current } }),
+        () => updateSettings({ last: { book, chapter, verse: visibleVerse.current } }),
         400,
       );
     };
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(measure);
     };
-    updateSettings({ translation, last: { book, chapter, verse: verse ?? visibleVerse.current } });
+    updateSettings({ last: { book, chapter, verse: verse ?? visibleVerse.current } });
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', onScroll);

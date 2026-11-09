@@ -1,12 +1,7 @@
-import { expect, test, type Page } from './fixtures';
+import { expect, setContinuous, test, type Page } from './fixtures';
 import { scrollToChapter } from './scroll-helpers';
 
-async function enableContinuous(page: Page) {
-  await page.goto('/');
-  await page.evaluate(() =>
-    localStorage.setItem('margins.settings.v1', JSON.stringify({ continuousScroll: true })),
-  );
-}
+const enableContinuous = (page: Page) => setContinuous(page, true);
 
 const place = (page: Page) => page.locator('.place-btn');
 

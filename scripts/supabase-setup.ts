@@ -64,7 +64,8 @@ async function main(): Promise<void> {
 
   // Sign-in settings.
   const siteUrl = process.env.SITE_URL || 'http://localhost:5173';
-  const allow = [siteUrl, 'http://localhost:5173', 'http://localhost:4173', ...(process.env.EXTRA_REDIRECT_URLS ?? '').split(',')]
+  // margins://app is the Windows app: sign-in emails and Google come back to the program.
+  const allow = [siteUrl, 'http://localhost:5173', 'http://localhost:4173', 'margins://app', ...(process.env.EXTRA_REDIRECT_URLS ?? '').split(',')]
     .map((u) => u.trim().replace(/\/$/, ''))
     .filter(Boolean);
   const auth: Record<string, unknown> = {

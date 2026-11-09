@@ -11,6 +11,11 @@ npm test           # unit and component tests (Vitest)
 npm run build      # type-check and production build with the service worker
 npm run test:e2e   # offline tests against the production build (Playwright; run `npx playwright install chromium` once)
 npm run lint
+
+npm run desktop        # the Windows app (Electron), built from the same code
+npm run test:desktop   # drives the Windows app with Playwright
+npm run dist:win       # release/Margins-Setup-<version>.exe
+npm run test:installer # installs it, tests it, uninstalls it
 ```
 
 ## Bible data

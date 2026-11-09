@@ -11,6 +11,7 @@
 import Dexie from 'dexie';
 import { db, MarginsDB, switchDatabase } from '../study/db';
 import type { StudyItem } from '../study/types';
+import { pendingAccountChangeCount } from '../settings';
 import { forUpload } from './engine';
 
 const LEGACY = 'margins';
@@ -50,9 +51,9 @@ export async function openAccountDatabase(userId: string): Promise<number> {
   return copies.length;
 }
 
-/** How many items here haven't reached the account yet. */
+/** How many items and account settings here haven't reached the account yet. */
 export async function unsyncedCount(): Promise<number> {
-  return db.items.where('dirty').equals(1).count();
+  return (await db.items.where('dirty').equals(1).count()) + pendingAccountChangeCount();
 }
 
 /** Removes this device's copy of the account's data (on signing out). */

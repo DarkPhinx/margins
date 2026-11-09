@@ -46,6 +46,8 @@ vi.mock('../src/sync/supabase', () => {
     isConfigured: () => true,
     supabase: () => ({ auth, channel: () => channel, removeChannel: async () => undefined }),
     supabaseRemote: () => remote,
+    // The account's settings: whatever the device sends, back.
+    supabaseSettingsRemote: () => ({ exchange: async (changes: object) => changes }),
   };
 });
 

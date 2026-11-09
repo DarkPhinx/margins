@@ -2,6 +2,9 @@
   "name": "margins",
   "private": true,
   "version": "0.1.0",
+  "description": "A user-led Bible study desk.",
+  "author": "Judel",
+  "main": "dist-electron/main.js",
   "type": "module",
   "scripts": {
     "data": "tsx scripts/build-bibles.ts && tsx scripts/build-xrefs.ts && tsx scripts/build-words.ts",
@@ -10,12 +13,19 @@
     "prebuild": "npm run data",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
+    "prebuild:desktop": "npm run data",
+    "build:desktop": "tsc --noEmit && vite build --mode desktop && tsc -p electron/tsconfig.json",
+    "desktop": "npm run build:desktop && electron .",
+    "dist:win": "npm run build:desktop && electron-builder --win nsis --x64",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "pretest": "npm run data",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "pretest:desktop": "npm run build:desktop",
+    "test:desktop": "playwright test -c playwright.desktop.config.ts",
+    "test:installer": "tsx scripts/test-installer.ts",
     "supabase:setup": "tsx scripts/supabase-setup.ts"
   },
   "dependencies": {
@@ -41,6 +51,8 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.2.1",
+    "electron": "^45.2.3",
+    "electron-builder": "^26.18.0",
     "eslint": "^10.14.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "fake-indexeddb": "^6.2.7",
@@ -55,5 +67,41 @@
     "vite-plugin-pwa": "^2.0.0",
     "vitest": "^5.1.0",
     "workbox-window": "^7.4.1"
+  },
+  "build": {
+    "appId": "app.margins.desktop",
+    "productName": "Margins",
+    "copyright": "Margins",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist-desktop/**/*",
+      "dist-electron/**/*",
+      "package.json",
+      "!node_modules/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "public/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Margins",
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "Margins-Setup-${version}.${ext}",
+      "include": "build/installer.nsh"
+    }
   }
 }

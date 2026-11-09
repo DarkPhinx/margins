@@ -11,8 +11,13 @@ import './words/words.css';
 import './sync/sync.css';
 import { App } from './App';
 import { setOfflineState } from './offline';
+import { applyScreenSettings } from './settings/apply';
 
-if ('serviceWorker' in navigator) {
+// Dark mode and text size, before the first render.
+applyScreenSettings();
+
+// The Windows app has everything on the computer already; the web app saves it with a service worker.
+if (!__DESKTOP__ && 'serviceWorker' in navigator) {
   registerSW({
     immediate: true,
     onOfflineReady: () => setOfflineState('ready'),
